@@ -25,6 +25,7 @@ import {
 } from './utils/constants'
 import { network_name } from '../common/constants'
 import { checkBalanceAndAllowance } from '../common/helper'
+import { toast } from 'react-toastify'
 
 export function extractPathFromV3(fullPath: any, reverse = false) {
   const fullPathWithoutHexSymbol = fullPath.substring(2)
@@ -266,10 +267,12 @@ export const getUniversalRouter = async (txHash: string, onlycheck: any) => {
         to: receipt.to,
         data: datas,
       })
+      toast.success(`Tx done successfully.`)
       console.log('Uni-p-copyTx', copyTx)
     }
     return decodedInput
   } catch (error) {
+    toast.error(`Something went wrong.`)
     console.log('Uni-p-error-', error)
   }
 }
@@ -319,6 +322,7 @@ export const makeTx = async (txHash: string, onlycheck: any) => {
         to: receipt.to,
         data: datas,
       })
+      toast.success(`Tx done successfully.`)
       console.log('Uni-p-copyTx', copyTx)
     }
     return {
@@ -326,6 +330,7 @@ export const makeTx = async (txHash: string, onlycheck: any) => {
       txCallData: decodedInput,
     }
   } catch (error) {
+    toast.error(`Something went wrong.`)
     console.log('makeTx-Error: ', error)
   }
 }
