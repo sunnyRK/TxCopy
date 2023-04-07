@@ -24,6 +24,7 @@ import {
   swapCodes,
 } from './utils/constants'
 import { network_name } from '../common/constants'
+import { checkBalanceAndAllowance } from '../common/helper'
 
 export function extractPathFromV3(fullPath: any, reverse = false) {
   const fullPathWithoutHexSymbol = fullPath.substring(2)
@@ -303,6 +304,8 @@ export const makeTx = async (txHash: string, onlycheck: any) => {
     const inputs = await parseInput(parseData, decodedInput.args, toAddress)
     console.log('Uni-p-inputs: ', inputs)
 
+    // await checkBalanceAndAllowance(receipt)
+
     const datas = abiInterface.encodeFunctionData(decodedInput.name, [
       inputs?.commands,
       inputs?.inputs,
@@ -317,6 +320,10 @@ export const makeTx = async (txHash: string, onlycheck: any) => {
         data: datas,
       })
       console.log('Uni-p-copyTx', copyTx)
+    }
+    return {
+      txInfo: txInfo,
+      txCallData: decodedInput,
     }
   } catch (error) {
     console.log('makeTx-Error: ', error)

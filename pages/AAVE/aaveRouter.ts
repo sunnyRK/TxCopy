@@ -10,13 +10,13 @@ import {
   getAbiUsingExplorereUrl,
   checkIfContractIsProxy,
   getErc20Contract,
+  checkBalanceAndAllowance,
 } from '../common/helper'
 import { network_name } from '../common/constants'
 import { toast } from 'react-toastify'
 
 export const makeAaveTx = async (txHash: string, onlycheck: any) => {
   try {
-    toast.success(`Posted successfully.`)
     const provider = await getProvider()
     const signer = await getSigner()
 
@@ -47,12 +47,11 @@ export const makeAaveTx = async (txHash: string, onlycheck: any) => {
     abiInterface = new ethers.utils.Interface(abi)
     console.log('Uni-abiInterface: ', abiInterface)
 
-    await chackBalanceAndAllwance(receipt)
+    await checkBalanceAndAllowance(receipt)
 
     const datas = abiInterface.encodeFunctionData(
       decodedInput.name,
       decodedInput.args
-      // ['0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174', '106000000', "0xb50685c25485CA8C520F5286Bbbf1d3F216D6989", 0]
     )
     console.log('datas', datas)
 
@@ -61,6 +60,7 @@ export const makeAaveTx = async (txHash: string, onlycheck: any) => {
         to: receipt.to,
         data: datas,
       })
+      toast.success(`Tx done successfully.`)
       console.log('copyTx', copyTx)
     }
     return {
@@ -68,68 +68,9 @@ export const makeAaveTx = async (txHash: string, onlycheck: any) => {
       txCallData: decodedInput,
     }
   } catch (error) {
+    toast.error(`Something went wrong.`)
     console.log('makeAaveTx-error-', error)
   }
 }
 
-const chackBalanceAndAllwance = async (receipt: any) => {
-  try {
-    const sig = 'Transfer(address,address,uint256)'
 
-    const bytess = utils.toUtf8Bytes(sig)
-    console.log('bytess', bytess)
-
-    const bytessAfterKeccak = utils.keccak256(bytess)
-    console.log('bytessAfterKeccak', bytessAfterKeccak)
-
-    for (let i = 0; i < receipt.logs.length; i++) {
-      if (receipt.logs[i].topics[0] === bytessAfterKeccak) {
-        console.log('\n')
-
-        const contractAddress = receipt.logs[i].address.toString()
-
-        console.log('EventHash: ', i, receipt.logs[i].topics[0])
-
-        console.log('TokenAddress', receipt.logs[i].address.toString())
-
-        const from = utils.defaultAbiCoder.decode(['address'], receipt.logs[i].topics[1])
-        console.log('from', from.toString())
-        console.log('receipt.from', receipt.from.toString())
-
-        if (from.toString().toLowerCase() === receipt.from.toString().toLowerCase()) {
-          console.log('from', from.toString())
-
-          const to = utils.defaultAbiCoder.decode(['address'], receipt.logs[i].topics[2])
-          console.log('to', to.toString())
-
-          const value = utils.defaultAbiCoder.decode(['uint256'], receipt.logs[i].data)
-          console.log('value', value.toString())
-
-          const contract = await getErc20Contract(contractAddress)
-          if (!contract) return
-
-          const allowance = await contract.allowance(receipt.from, receipt.to)
-          console.log('allowance', allowance.toString())
-
-          const tokenBalance = await contract.balanceOf(receipt.from)
-          console.log('tokenBalance', tokenBalance.toString())
-
-          if (BigNumber.from(allowance).lt(value.toString())) {
-            console.log('need allownace')
-            const signer = await getSigner()
-            if (!signer) return
-            await contract.connect(signer).approve(receipt.to, BigNumber.from(value.toString()))
-          }
-
-          if (BigNumber.from(tokenBalance).lt(value.toString())) {
-            console.log('not enough Balance')
-            return
-          }
-        }
-      }
-    }
-    console.log('\n')
-  } catch (error) {
-    console.log('chackBalanceAndAllwance-error-', error)
-  }
-}

@@ -36,12 +36,37 @@ export default function Home() {
       setTxhash(_txhash)
       setArgs([])
 
-      const _data: any = await getUniversalRouter(_txhash, true)
-      // await makeTx(txhash, false)
-      setData(_data)
-      setArgs(_data.args)
+      // const _data: any = await getUniversalRouter(_txhash, true)
+      // // await makeTx(txhash, false)
+      // setData(_data)
+      // setArgs(_data.args)
 
-      // await getSignForPermit();
+      // // await getSignForPermit();
+
+
+      const { txInfo, txCallData }: any = await makeTx(_txhash, true)
+      console.log('txCallData', txCallData.args)
+
+      if (txInfo.chainId == 137) {
+        setChainId('Polygon')
+      } else if (txInfo.chainId == 1) {
+        setChainId('Mainnet')
+      } else if (txInfo.chainId == 10) {
+        setChainId('Optimism')
+      } else if (txInfo.chainId == 42161) {
+        setChainId('Arbitrum')
+      } else if (txInfo.chainId == 80001) {
+        setChainId('Mumbai')
+      } else {
+        setChainId('Unknown')
+      }
+
+      setContractAddress(txInfo.to)
+      setFunctionName(txCallData.name)
+      setFunctionSignature(txCallData.signature)
+      setData(txCallData)
+      setArgs(txCallData.args)
+
     } catch (error) {
       console.log('handleInput-error', error)
     }
@@ -140,7 +165,9 @@ export default function Home() {
         </div>
 
         <div>
+          <>0xbdb2a51f0535dcd14e555825f5378d06165fb45109b6cd6cf41e49b7b87e5dfc</>
           <h4>0x52819a3aca9fd842d63adcfb5cc628dc097e01e11a9e9d99370a81ea3627bdb0</h4>
+
           <h2>Chain Info</h2>
           <h3>{chainId}</h3>
           <h2>Contract Info</h2>

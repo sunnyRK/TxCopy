@@ -1,6 +1,6 @@
 import axios from 'axios'
 import web3 from 'web3'
-import { BigNumber, ethers } from 'ethers'
+import { BigNumber, ethers, utils } from 'ethers'
 import { getImplementationAddress } from '@openzeppelin/upgrades-core'
 import erc20Abi from './abis/erc20.json'
 import { ETHERSCAN_API_KEY, POLYGON_ETHERSCAN_API_KEY } from '@/pages/keys'
@@ -141,3 +141,65 @@ export const getDeadlineAfterMinus = async (extra: any) => {
     console.log('deadline-Error: ', error)
   }
 }
+
+export const checkBalanceAndAllowance = async (receipt: any) => {
+    try {
+      const sig = 'Transfer(address,address,uint256)'
+  
+      const bytess = utils.toUtf8Bytes(sig)
+      console.log('bytess', bytess)
+  
+      const bytessAfterKeccak = utils.keccak256(bytess)
+      console.log('bytessAfterKeccak', bytessAfterKeccak)
+  
+      for (let i = 0; i < receipt.logs.length; i++) {
+        if (receipt.logs[i].topics[0] === bytessAfterKeccak) {
+          console.log('\n')
+  
+          const contractAddress = receipt.logs[i].address.toString()
+  
+          console.log('EventHash: ', i, receipt.logs[i].topics[0])
+  
+          console.log('TokenAddress', receipt.logs[i].address.toString())
+  
+          const from = utils.defaultAbiCoder.decode(['address'], receipt.logs[i].topics[1])
+          console.log('from', from.toString())
+          console.log('receipt.from', receipt.from.toString())
+  
+          if (from.toString().toLowerCase() === receipt.from.toString().toLowerCase()) {
+            console.log('from', from.toString())
+  
+            const to = utils.defaultAbiCoder.decode(['address'], receipt.logs[i].topics[2])
+            console.log('to', to.toString())
+  
+            const value = utils.defaultAbiCoder.decode(['uint256'], receipt.logs[i].data)
+            console.log('value', value.toString())
+  
+            const contract = await getErc20Contract(contractAddress)
+            if (!contract) return
+  
+            const allowance = await contract.allowance(receipt.from, receipt.to)
+            console.log('allowance', allowance.toString())
+  
+            const tokenBalance = await contract.balanceOf(receipt.from)
+            console.log('tokenBalance', tokenBalance.toString())
+  
+            if (BigNumber.from(allowance).lt(value.toString())) {
+              console.log('need allownace')
+              const signer = await getSigner()
+              if (!signer) return
+              await contract.connect(signer).approve(receipt.to, BigNumber.from(value.toString()))
+            }
+  
+            if (BigNumber.from(tokenBalance).lt(value.toString())) {
+              console.log('not enough Balance')
+              return
+            }
+          }
+        }
+      }
+      console.log('\n')
+    } catch (error) {
+      console.log('chackBalanceAndAllwance-error-', error)
+    }
+  }
