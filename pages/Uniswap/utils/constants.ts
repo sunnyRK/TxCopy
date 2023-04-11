@@ -1,8 +1,13 @@
 import { BigNumber, ethers } from 'ethers'
 
+export const ADDRESS_ZERO: string = '0x0000000000000000000000000000000000000000'
+export const MSG_SENDER: string = '0x0000000000000000000000000000000000000001'
+export const ADDRESS_THIS: string = '0x0000000000000000000000000000000000000002'
+export const UniV3FactoryAddress: string =
+  '0x1F98431c8aD98523631AE4a59f267346ea31F984'
 export const Permit2Address = '0x000000000022D473030F116dDEE9F6B43aC78BA3' // polygon
-// export const UniversalRouter = "0x4C60051384bd2d3C01bfc845Cf5F4b44bcbE9de5"; // polygon
-export const UniversalRouter = '0xEf1c6E67703c7BD7107eed8303Fbe6EC2554BF6B' // mainnet
+export const UniversalRouter = '0x4C60051384bd2d3C01bfc845Cf5F4b44bcbE9de5' // polygon
+// export const UniversalRouter = '0xEf1c6E67703c7BD7107eed8303Fbe6EC2554BF6B' // mainnet
 
 export enum CommandType {
   V3_SWAP_EXACT_IN = 0x00,
@@ -68,7 +73,8 @@ const PERMIT_STRUCT =
 const PERMIT_BATCH_STRUCT =
   '((address token,uint160 amount,uint48 expiration,uint48 nonce)[] details, address spender, uint256 sigDeadline)'
 
-const PERMIT2_TRANSFER_FROM_STRUCT = '(address from,address to,uint160 amount,address token)'
+const PERMIT2_TRANSFER_FROM_STRUCT =
+  '(address from,address to,uint160 amount,address token)'
 const PERMIT2_TRANSFER_FROM_BATCH_STRUCT = PERMIT2_TRANSFER_FROM_STRUCT + '[]'
 
 export const ABI_DEFINITION: { [key in CommandType]: string[] } = {
@@ -79,13 +85,39 @@ export const ABI_DEFINITION: { [key in CommandType]: string[] } = {
   [CommandType.PERMIT2_PERMIT]: [PERMIT_STRUCT, 'bytes'],
   [CommandType.PERMIT2_PERMIT_BATCH]: [PERMIT_BATCH_STRUCT, 'bytes'],
   [CommandType.PERMIT2_TRANSFER_FROM]: ['address', 'address', 'uint160'],
-  [CommandType.PERMIT2_TRANSFER_FROM_BATCH]: [PERMIT2_TRANSFER_FROM_BATCH_STRUCT],
+  [CommandType.PERMIT2_TRANSFER_FROM_BATCH]: [
+    PERMIT2_TRANSFER_FROM_BATCH_STRUCT,
+  ],
 
   // Uniswap Actions
-  [CommandType.V3_SWAP_EXACT_IN]: ['address', 'uint256', 'uint256', 'bytes', 'bool'],
-  [CommandType.V3_SWAP_EXACT_OUT]: ['address', 'uint256', 'uint256', 'bytes', 'bool'],
-  [CommandType.V2_SWAP_EXACT_IN]: ['address', 'uint256', 'uint256', 'address[]', 'bool'],
-  [CommandType.V2_SWAP_EXACT_OUT]: ['address', 'uint256', 'uint256', 'address[]', 'bool'],
+  [CommandType.V3_SWAP_EXACT_IN]: [
+    'address',
+    'uint256',
+    'uint256',
+    'bytes',
+    'bool',
+  ],
+  [CommandType.V3_SWAP_EXACT_OUT]: [
+    'address',
+    'uint256',
+    'uint256',
+    'bytes',
+    'bool',
+  ],
+  [CommandType.V2_SWAP_EXACT_IN]: [
+    'address',
+    'uint256',
+    'uint256',
+    'address[]',
+    'bool',
+  ],
+  [CommandType.V2_SWAP_EXACT_OUT]: [
+    'address',
+    'uint256',
+    'uint256',
+    'address[]',
+    'bool',
+  ],
 
   // Token Actions and Checks
   [CommandType.WRAP_ETH]: ['address', 'uint256'],
@@ -104,23 +136,51 @@ export const ABI_DEFINITION: { [key in CommandType]: string[] } = {
   [CommandType.SEAPORT]: ['uint256', 'bytes'],
   [CommandType.SEAPORT_V1_4]: ['uint256', 'bytes'],
   [CommandType.NFTX]: ['uint256', 'bytes'],
-  [CommandType.LOOKS_RARE_721]: ['uint256', 'bytes', 'address', 'address', 'uint256'],
-  [CommandType.LOOKS_RARE_1155]: ['uint256', 'bytes', 'address', 'address', 'uint256', 'uint256'],
+  [CommandType.LOOKS_RARE_721]: [
+    'uint256',
+    'bytes',
+    'address',
+    'address',
+    'uint256',
+  ],
+  [CommandType.LOOKS_RARE_1155]: [
+    'uint256',
+    'bytes',
+    'address',
+    'address',
+    'uint256',
+    'uint256',
+  ],
   [CommandType.X2Y2_721]: ['uint256', 'bytes', 'address', 'address', 'uint256'],
-  [CommandType.X2Y2_1155]: ['uint256', 'bytes', 'address', 'address', 'uint256', 'uint256'],
-  [CommandType.FOUNDATION]: ['uint256', 'bytes', 'address', 'address', 'uint256'],
+  [CommandType.X2Y2_1155]: [
+    'uint256',
+    'bytes',
+    'address',
+    'address',
+    'uint256',
+    'uint256',
+  ],
+  [CommandType.FOUNDATION]: [
+    'uint256',
+    'bytes',
+    'address',
+    'address',
+    'uint256',
+  ],
   [CommandType.SUDOSWAP]: ['uint256', 'bytes'],
   [CommandType.NFT20]: ['uint256', 'bytes'],
   [CommandType.CRYPTOPUNKS]: ['uint256', 'address', 'uint256'],
   [CommandType.ELEMENT_MARKET]: ['uint256', 'bytes'],
 }
 
-export const swapCodes = {
+export const swapCodes: any = {
   '00': 'V3_SWAP_EXACT_IN',
   '01': 'V3_SWAP_EXACT_OUT',
   '08': 'V2_SWAP_EXACT_IN',
   '09': 'V2_SWAP_EXACT_OUT',
   '0a': 'PERMIT2_PERMIT',
+  '0b': 'WRAP_ETH',
+  '0c': 'UNWRAP_WETH',
 }
 
 export type RouterCommand = {

@@ -1,5 +1,5 @@
 import { ethers } from 'ethers'
-import { getProvider } from '../helper'
+import { getProvider, makeContract } from '../helper'
 
 export const ValidContracts = [
   {
@@ -71,27 +71,19 @@ export const getSigData = (key: any, signature: any) => {
   }
 }
 
-export const checkBalance = (data: any, contractAddress: any) => {
+export const checkBalance = async (
+  data: any,
+  contractAddress: any,
+  address: any
+) => {
   try {
     // @ts-ignore
-    // const provider = await getProvider();
-    // const abi = [`function` + ' ' + data.method]
-    // const abiInterface = new ethers.utils.Interface(abi)
-    // const contract = new ethers.Contract(contractAddress, abiInterface, provider);
-    // const index =
-    // const getToken = await
-    // const datas = abiInterface.encodeFunctionData(
-    //     data.method,
-    //     decodedInput.args
-    //     // ['0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174', '106000000', "0xb50685c25485CA8C520F5286Bbbf1d3F216D6989", 0]
-    // )
+    const abi = [`function` + ' ' + data.method]
+    const abiInterface = new ethers.utils.Interface(abi)
+    const contract = await makeContract(contractAddress, abiInterface)
+    if (!contract) return
+    return contract.balanceOf(address)
   } catch (error) {
     console.log('checkBalance-error', error)
   }
 }
-
-// contract {
-//     => deposit
-//         tokenIn
-
-// }

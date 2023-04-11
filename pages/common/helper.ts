@@ -3,9 +3,16 @@ import web3 from 'web3'
 import { BigNumber, ethers, utils } from 'ethers'
 import { getImplementationAddress } from '@openzeppelin/upgrades-core'
 import erc20Abi from './abis/erc20.json'
-import { ETHERSCAN_API_KEY, POLYGON_ETHERSCAN_API_KEY } from '@/pages/keys'
+import {
+  ETHERSCAN_API_KEY,
+  POLYGON_ETHERSCAN_API_KEY,
+} from '@/pages/common/keys'
+import { toast } from 'react-toastify'
 
-export const getAbiUsingExplorereUrl = async (network: string, toAddress: string) => {
+export const getAbiUsingExplorereUrl = async (
+  network: string,
+  toAddress: string
+) => {
   try {
     let URL
     if (network === 'mainnet') {
@@ -41,7 +48,12 @@ export const getTransactionByBlockNumberAndIndexUsingExplorereUrl = async (
   }
 }
 
-export const checkIsPermit2Approved = async (token: string, from: any, spender: any, amount: any) => {
+export const checkIsPermit2Approved = async (
+  token: string,
+  from: any,
+  spender: any,
+  amount: any
+) => {
   try {
     const tokenContract = await getErc20Contract(token)
     if (!tokenContract) return
@@ -55,11 +67,9 @@ export const checkIsPermit2Approved = async (token: string, from: any, spender: 
   }
 }
 
-export const getErc20Contract = async (token: string) => {
+export const getErc20Contract = async (tokenAddress: string) => {
   try {
-    let provider = await getProvider()
-    if (!provider) return
-    const tokenContract = new ethers.Contract(token, erc20Abi, provider)
+    const tokenContract = await makeContract(tokenAddress, erc20Abi)
     return tokenContract
   } catch (error) {
     console.log('Erc20Contract-Error: ', error)
@@ -97,33 +107,6 @@ export const getSigner = async () => {
   }
 }
 
-export const checkIfContractIsProxy = async (abi: any, contratAddress: any) => {
-  try {
-    let provider = await getProvider()
-    if (!provider) return
-    let currentImplAddress
-    let isProxy: boolean = false
-
-    if (
-      abi.filter(function (e: any) {
-        return e.name === 'upgradeTo'
-      }).length > 0
-    ) {
-      currentImplAddress = await getImplementationAddress(provider, contratAddress)
-      isProxy = true
-    } else {
-      currentImplAddress = contratAddress
-      isProxy = false
-    }
-    return {
-      isProxy: isProxy,
-      currentImplAddress: currentImplAddress,
-    }
-  } catch (error) {
-    console.log('IfContractProxy-Error: ', error)
-  }
-}
-
 export const getDeadline = async (extra: any) => {
   try {
     const deadline = BigNumber.from(Math.floor(Date.now() / 1000)).add(extra)
@@ -142,64 +125,126 @@ export const getDeadlineAfterMinus = async (extra: any) => {
   }
 }
 
+export const checkIfContractIsProxy = async (abi: any, contratAddress: any) => {
+  try {
+    let provider = await getProvider()
+    if (!provider) return
+    let currentImplAddress
+    let isProxy: boolean = false
+
+    if (
+      abi.filter(function (e: any) {
+        return e.name === 'upgradeTo'
+      }).length > 0
+    ) {
+      currentImplAddress = await getImplementationAddress(
+        provider,
+        contratAddress
+      )
+      isProxy = true
+    } else {
+      currentImplAddress = contratAddress
+      isProxy = false
+    }
+    return {
+      isProxy: isProxy,
+      currentImplAddress: currentImplAddress,
+    }
+  } catch (error) {
+    console.log('IfContractProxy-Error: ', error)
+  }
+}
+
 export const checkBalanceAndAllowance = async (receipt: any) => {
-    try {
-      const sig = 'Transfer(address,address,uint256)'
-  
-      const bytess = utils.toUtf8Bytes(sig)
-      console.log('bytess', bytess)
-  
-      const bytessAfterKeccak = utils.keccak256(bytess)
-      console.log('bytessAfterKeccak', bytessAfterKeccak)
-  
-      for (let i = 0; i < receipt.logs.length; i++) {
-        if (receipt.logs[i].topics[0] === bytessAfterKeccak) {
-          console.log('\n')
-  
-          const contractAddress = receipt.logs[i].address.toString()
-  
-          console.log('EventHash: ', i, receipt.logs[i].topics[0])
-  
-          console.log('TokenAddress', receipt.logs[i].address.toString())
-  
-          const from = utils.defaultAbiCoder.decode(['address'], receipt.logs[i].topics[1])
+  let id: any
+  try {
+    const sig = 'Transfer(address,address,uint256)'
+
+    const bytess = utils.toUtf8Bytes(sig)
+    console.log('bytess', bytess)
+
+    const bytessAfterKeccak = utils.keccak256(bytess)
+    console.log('bytessAfterKeccak', bytessAfterKeccak)
+
+    for (let i = 0; i < receipt.logs.length; i++) {
+      if (receipt.logs[i].topics[0] === bytessAfterKeccak) {
+        console.log('\n')
+
+        const contractAddress = receipt.logs[i].address.toString()
+
+        console.log('EventHash: ', i, receipt.logs[i].topics[0])
+
+        console.log('TokenAddress', receipt.logs[i].address.toString())
+
+        const from = utils.defaultAbiCoder.decode(
+          ['address'],
+          receipt.logs[i].topics[1]
+        )
+        console.log('from', from.toString())
+        console.log('receipt.from', receipt.from.toString())
+
+        if (
+          from.toString().toLowerCase() ===
+          receipt.from.toString().toLowerCase()
+        ) {
           console.log('from', from.toString())
-          console.log('receipt.from', receipt.from.toString())
-  
-          if (from.toString().toLowerCase() === receipt.from.toString().toLowerCase()) {
-            console.log('from', from.toString())
-  
-            const to = utils.defaultAbiCoder.decode(['address'], receipt.logs[i].topics[2])
-            console.log('to', to.toString())
-  
-            const value = utils.defaultAbiCoder.decode(['uint256'], receipt.logs[i].data)
-            console.log('value', value.toString())
-  
-            const contract = await getErc20Contract(contractAddress)
-            if (!contract) return
-  
-            const allowance = await contract.allowance(receipt.from, receipt.to)
-            console.log('allowance', allowance.toString())
-  
-            const tokenBalance = await contract.balanceOf(receipt.from)
-            console.log('tokenBalance', tokenBalance.toString())
-  
-            if (BigNumber.from(allowance).lt(value.toString())) {
-              console.log('need allownace')
-              const signer = await getSigner()
-              if (!signer) return
-              await contract.connect(signer).approve(receipt.to, BigNumber.from(value.toString()))
-            }
-  
-            if (BigNumber.from(tokenBalance).lt(value.toString())) {
-              console.log('not enough Balance')
-              return
-            }
+
+          const to = utils.defaultAbiCoder.decode(
+            ['address'],
+            receipt.logs[i].topics[2]
+          )
+          console.log('to', to.toString())
+
+          const value = utils.defaultAbiCoder.decode(
+            ['uint256'],
+            receipt.logs[i].data
+          )
+          console.log('value', value.toString())
+
+          const contract = await getErc20Contract(contractAddress)
+          if (!contract) return
+
+          const allowance = await contract.allowance(receipt.from, receipt.to)
+          console.log('allowance', allowance.toString())
+
+          const tokenBalance = await contract.balanceOf(receipt.from)
+          console.log('tokenBalance', tokenBalance.toString())
+
+          if (BigNumber.from(allowance).lt(value.toString())) {
+            console.log('need allownace')
+            const signer = await getSigner()
+            if (!signer) return
+
+            // approve with toast pending
+            id = toast.loading('Approve Pending...')
+            const tx = await contract
+              .connect(signer)
+              .approve(receipt.to, BigNumber.from(value.toString()))
+            await tx.wait()
+            toast.update(id, {
+              render: 'Approved',
+              type: 'success',
+              isLoading: false,
+              autoClose: 5000,
+            })
+          }
+
+          if (BigNumber.from(tokenBalance).lt(value.toString())) {
+            console.log('not enough Balance')
+            toast.error(`Not enough Balance for this tx`)
+            return
           }
         }
       }
-      console.log('\n')
-    } catch (error) {
-      console.log('chackBalanceAndAllwance-error-', error)
     }
+    console.log('\n')
+  } catch (error) {
+    toast.update(id, {
+      render: 'Approve Error',
+      type: 'error',
+      isLoading: false,
+      autoClose: 5000,
+    })
+    console.log('chackBalanceAndAllwance-error-', error)
   }
+}

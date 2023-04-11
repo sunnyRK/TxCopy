@@ -1,15 +1,9 @@
-import { ethers, BigNumber, utils } from 'ethers'
-import axios from 'axios'
-import web3 from 'web3'
-import { getImplementationAddress } from '@openzeppelin/upgrades-core'
-import { parseEther, defaultAbiCoder } from 'ethers/lib/utils'
-import { ETHERSCAN_API_KEY, POLYGON_ETHERSCAN_API_KEY } from '../keys'
+import { ethers } from 'ethers'
 import {
   getProvider,
   getSigner,
   getAbiUsingExplorereUrl,
   checkIfContractIsProxy,
-  getErc20Contract,
   checkBalanceAndAllowance,
 } from '../common/helper'
 import { network_name } from '../common/constants'
@@ -27,7 +21,10 @@ export const makeAaveTx = async (txHash: string, onlycheck: any) => {
     console.log('receipt', receipt)
 
     let abi = await getAbiUsingExplorereUrl(network_name, receipt?.to)
-    const { isProxy, currentImplAddress }: any = await checkIfContractIsProxy(abi, receipt.to)
+    const { isProxy, currentImplAddress }: any = await checkIfContractIsProxy(
+      abi,
+      receipt.to
+    )
     const toAddress = currentImplAddress
     console.log('toAddress', toAddress.toString())
 
@@ -38,9 +35,11 @@ export const makeAaveTx = async (txHash: string, onlycheck: any) => {
     const txInfo = await provider.getTransaction(txHash)
     console.log('txInfo', txInfo)
 
-    let decodedInput = abiInterface.parseTransaction({ data: txInfo.data, value: txInfo.value })
+    let decodedInput = abiInterface.parseTransaction({
+      data: txInfo.data,
+      value: txInfo.value,
+    })
     console.log('decodedInput', decodedInput)
-    console.log('decodedInput', decodedInput.args[1])
 
     // shrink abi & abiInterface to specific function only
     abi = [`function` + ' ' + decodedInput.signature]
@@ -53,7 +52,7 @@ export const makeAaveTx = async (txHash: string, onlycheck: any) => {
       decodedInput.name,
       decodedInput.args
     )
-    console.log('datas', datas)
+    console.log('encodeData', datas)
 
     if (!onlycheck) {
       const copyTx = await signer.sendTransaction({
@@ -72,5 +71,3 @@ export const makeAaveTx = async (txHash: string, onlycheck: any) => {
     console.log('makeAaveTx-error-', error)
   }
 }
-
-

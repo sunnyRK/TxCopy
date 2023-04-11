@@ -88,7 +88,6 @@ export function encodePath(path: string[], fees: any[]): string {
 }
 
 export function encodePathExactInput(tokens: string[]) {
-  // console.log('FeeAmount.MEDIUM', FeeAmount.MEDIUM);
   return encodePath(tokens, new Array(tokens.length - 1).fill(3000))
 }
 
@@ -106,15 +105,27 @@ export async function signPermit(
   verifyingContract: string
 ): Promise<string> {
   const eip712Domain = getEip712Domain(chainId, verifyingContract)
-  console.log('eip712Domain', eip712Domain)
-  const signature = await signer._signTypedData(eip712Domain, PERMIT2_PERMIT_TYPE, permit)
+  const signature = await signer._signTypedData(
+    eip712Domain,
+    PERMIT2_PERMIT_TYPE,
+    permit
+  )
   return signature
 }
 
-export async function getPermitSignature(permit: PermitSingle, signer: any, permit2: any): Promise<string> {
+export async function getPermitSignature(
+  permit: PermitSingle,
+  signer: any,
+  permit2: any
+): Promise<string> {
   // look up the correct nonce for this permit
   const address = await signer.getAddress()
-  const nextNonce = (await permit2.allowance(address, permit.details.token, permit.spender)).nonce
+  console.log('address++', address, permit.details.token, permit.spender)
+  console.log('address+++', permit, permit.spender)
+  const nextNonce = (
+    await permit2.allowance(address, permit.details.token, permit.spender)
+  ).nonce
+  console.log('nextNonce++', nextNonce)
   permit.details.nonce = nextNonce
   return await signPermit(permit, signer, permit2.address)
 }
@@ -125,7 +136,13 @@ export async function getPermitBatchSignature(
   permit2: any
 ): Promise<string> {
   for (const i in permit.details) {
-    const nextNonce = (await permit2.allowance(signer.address, permit.details[i].token, permit.spender)).nonce
+    const nextNonce = (
+      await permit2.allowance(
+        signer.address,
+        permit.details[i].token,
+        permit.spender
+      )
+    ).nonce
     permit.details[i].nonce = nextNonce
   }
 
@@ -138,7 +155,10 @@ export async function signPermitBatch(
   verifyingContract: string
 ): Promise<string> {
   const eip712Domain = getEip712Domain(chainId, verifyingContract)
-  const signature = await signer._signTypedData(eip712Domain, PERMIT2_PERMIT_BATCH_TYPE, permit)
-
+  const signature = await signer._signTypedData(
+    eip712Domain,
+    PERMIT2_PERMIT_BATCH_TYPE,
+    permit
+  )
   return signature
 }
