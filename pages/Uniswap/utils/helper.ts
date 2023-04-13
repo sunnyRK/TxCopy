@@ -22,6 +22,7 @@ import {
   getSigner,
   makeContract,
 } from '@/pages/common/helper'
+import erc20Abi from '../../common/abis/erc20.json'
 
 export const checkIsPermit2Approved = async (
   token: string,
@@ -29,20 +30,35 @@ export const checkIsPermit2Approved = async (
   spender: any,
   amount: any
 ) => {
+  let provider = await getProvider()
+  let signer = await getSigner()
+  let tokenContract
   try {
-    const tokenContract = await getErc20Contract(token)
-    if (!tokenContract) return
-    console.log('checkIsPermit2Approved-from', from, spender)
-    const allowance = await tokenContract.allowance(from, spender)
-    console.log('checkIsPermit2Approved-allowance', token, allowance.toString())
-    console.log('checkIsPermit2Approved-amount', amount.toString())
-
+    if (!provider) return
+    if (!signer) return
+    tokenContract = new ethers.Contract(token, erc20Abi, signer)
+    console.log('checkIsPermit2Approved-from++++', from, spender, tokenContract)
+    const allowance = await tokenContract
+      .connect(signer)
+      .allowance(from, spender)
+    // console.log(
+    //   'checkIsPermit2Approved-after++++',
+    //   from,
+    //   spender,
+    //   tokenContract
+    // )
+    // console.log('checkIsPermit2Approved-allowance', token, allowance.toString())
+    // console.log('checkIsPermit2Approved-amount', amount.toString())
     if (BigNumber.from(allowance).gte(BigNumber.from(amount.toString()))) {
+      // console.log('ifBigNumber')
       return true
+    } else {
+      // console.log('elseBigNumber')
+      // return false
     }
     return false
   } catch (error) {
-    console.log('PermitArpprove-Error: ', error)
+    console.log('PermitArpprove-Error: ', error, signer, tokenContract)
   }
 }
 
@@ -52,16 +68,44 @@ export const checkIsSpenderApprovedForPermit2 = async (
   spender: any,
   amount: any
 ) => {
+  let provider = await getProvider()
+  let signer = await getSigner()
   try {
-    const permit2 = await makeContract(Permit2Address, Permit2Abi.abi)
-    if (!permit2) return
-    const allowance = await permit2.allowance(from, token, spender)
-    console.log('checkIsSpenderApprovedForPermit2-from', from, token, spender)
-    console.log(
-      'checkIsSpenderApprovedForPermit2-allowance',
-      allowance.toString()
-    )
-    console.log('checkIsSpenderApprovedForPermit2-amount', amount.toString())
+    if (!provider) return
+    if (!signer) return
+
+    // const permit2 = await makeContract(Permit2Address, Permit2Abi.abi)
+    const permit2 = new ethers.Contract(Permit2Address, Permit2Abi.abi, signer)
+    // console.log(
+    //   'checkIsSpenderApprovedForPermit2-from',
+    //   from,
+    //   token,
+    //   spender,
+    //   permit2
+    // )
+    // if (!permit2) {
+    //   console.log('permit2-notmade', permit2)
+    //   return
+    // }
+    // console.log(
+    //   'checkIsSpenderApprovedForPermit2-from-2',
+    //   from,
+    //   token,
+    //   spender,
+    //   permit2
+    // )
+
+    const code = await provider.getCode(Permit2Address)
+
+    // if (!permit2) return
+    const allowance = await permit2
+      .connect(signer)
+      .allowance(from, token, spender)
+    // console.log(
+    //   'checkIsSpenderApprovedForPermit2-allowance',
+    //   allowance.toString()
+    // )
+    // console.log('checkIsSpenderApprovedForPermit2-amount', amount.toString())
     if (allowance.amount.gte(BigNumber.from(amount.toString()))) {
       const currentDeadline = await getDeadline(120)
       if (
@@ -74,7 +118,7 @@ export const checkIsSpenderApprovedForPermit2 = async (
     }
     return false
   } catch (error) {
-    console.log('SpenderPermitArpprove-Error: ', error)
+    console.log('SpenderPermitArpprove-Error: ', error, signer)
   }
 }
 
@@ -184,7 +228,6 @@ export const getSignForPermitForPermit2 = async (
   try {
     let signer = await getSigner()
     if (!signer) return
-    console.log('hi1')
     const deadline: any = await getDeadline(BigNumber.from('100000000'))
     const permit: PermitSingle = {
       details: {
@@ -196,21 +239,16 @@ export const getSignForPermitForPermit2 = async (
       spender: universalRouter,
       sigDeadline: BigNumber.from(await getDeadline(1800)),
     }
-    console.log('hi2')
 
     const permit2 = await makeContract(Permit2Address, Permit2Abi.abi)
     if (!permit2) return
-    console.log('hi3')
-
     const sig = await getPermitSignature(permit, signer, permit2)
-    console.log('hi4')
 
     // const path = encodePathExactInput([data.path[0], data.path[1]])
     const commands = await createCommand(CommandType.PERMIT2_PERMIT, [
       permit,
       sig,
     ])
-    console.log('hi5', commands)
     return commands
   } catch (error) {
     console.log('signPermit-Error: ', error)
@@ -309,8 +347,8 @@ export const rearrangeSwapData = async (data: any) => {
       return
     }
 
-    console.log('makeSwapData', makeSwapData)
-    console.log('commandType', commandType)
+    // console.log('makeSwapData', makeSwapData)
+    // console.log('commandType', commandType)
 
     swapCommand = await createCommand(commandType, makeSwapData)
     return swapCommand

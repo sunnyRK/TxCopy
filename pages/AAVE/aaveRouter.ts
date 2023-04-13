@@ -10,12 +10,14 @@ import { network_name } from '../common/constants'
 import { toast } from 'react-toastify'
 
 export const makeAaveTx = async (txHash: string, onlycheck: any) => {
+  let decodedInput
   try {
     const provider = await getProvider()
     const signer = await getSigner()
 
     if (!provider) return
     if (!signer) return
+    const address = await signer.getAddress()
 
     const receipt: any = await provider.getTransactionReceipt(txHash)
     console.log('receipt', receipt)
@@ -35,11 +37,21 @@ export const makeAaveTx = async (txHash: string, onlycheck: any) => {
     const txInfo = await provider.getTransaction(txHash)
     console.log('txInfo', txInfo)
 
-    let decodedInput = abiInterface.parseTransaction({
+    decodedInput = abiInterface.parseTransaction({
       data: txInfo.data,
       value: txInfo.value,
     })
     console.log('decodedInput', decodedInput)
+
+    let inputParams: any = []
+    for (let i = 0; i < decodedInput.args.length; i++) {
+      if (decodedInput.args[i] === receipt.from) {
+        inputParams[i] = address
+      } else {
+        inputParams[i] = decodedInput.args[i]
+      }
+    }
+    console.log('inputParams', inputParams)
 
     // shrink abi & abiInterface to specific function only
     abi = [`function` + ' ' + decodedInput.signature]
@@ -50,7 +62,8 @@ export const makeAaveTx = async (txHash: string, onlycheck: any) => {
 
     const datas = abiInterface.encodeFunctionData(
       decodedInput.name,
-      decodedInput.args
+      // decodedInput.args
+      inputParams
     )
     console.log('encodeData', datas)
 
@@ -67,7 +80,11 @@ export const makeAaveTx = async (txHash: string, onlycheck: any) => {
       txCallData: decodedInput,
     }
   } catch (error) {
-    toast.error(`Something went wrong.`)
+    if (decodedInput) {
+      toast.error("You can't perform " + decodedInput?.name + ' operation')
+    } else {
+      toast.error(`Something went wrong. Please try again`)
+    }
     console.log('makeAaveTx-error-', error)
   }
 }

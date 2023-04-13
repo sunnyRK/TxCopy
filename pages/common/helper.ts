@@ -78,9 +78,9 @@ export const getErc20Contract = async (tokenAddress: string) => {
 
 export const makeContract = async (contractAddress: string, abi: any) => {
   try {
-    let provider = await getProvider()
-    if (!provider) return
-    const contract = new ethers.Contract(contractAddress, abi, provider)
+    let signer = await getSigner()
+    if (!signer) return
+    const contract = new ethers.Contract(contractAddress, abi, signer)
     return contract
   } catch (error) {
     console.log('Erc20Contract-Error: ', error)

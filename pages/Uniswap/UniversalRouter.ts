@@ -24,23 +24,23 @@ export const makeTx = async (txHash: string, onlycheck: any) => {
     console.log('Uni-receipt', receipt)
 
     let abi = await getAbiUsingExplorereUrl(network_name, receipt?.to)
-    console.log('Uni-abi', abi)
+    // console.log('Uni-abi', abi)
 
     const { isProxy, currentImplAddress }: any = await checkIfContractIsProxy(
       abi,
       receipt.to
     )
     const toAddress = currentImplAddress
-    console.log('Uni-toAddress', toAddress)
+    // console.log('Uni-toAddress', toAddress)
 
     if (isProxy) {
       abi = await getAbiUsingExplorereUrl(network_name, toAddress)
     }
     let abiInterface = new ethers.utils.Interface(abi)
-    console.log('Uni-abiInterface', abiInterface)
+    // console.log('Uni-abiInterface', abiInterface)
 
     const txInfo = await provider.getTransaction(txHash)
-    console.log('Uni-txInfo', txInfo)
+    // console.log('Uni-txInfo', txInfo)
 
     let decodedInput = abiInterface.parseTransaction({
       data: txInfo.data,
@@ -52,7 +52,9 @@ export const makeTx = async (txHash: string, onlycheck: any) => {
     abi = [`function` + ' ' + decodedInput.signature]
     abiInterface = new ethers.utils.Interface(abi)
 
-    const inputs = await checkSpenderAllowance(receipt)
+    // await generateRoute()
+
+    const inputs = await checkSpenderAllowance(receipt, onlycheck)
     console.log('Uni-inputs: ', inputs)
 
     if (!inputs?.commands && !inputs?.inputs) return

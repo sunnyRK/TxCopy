@@ -10,7 +10,7 @@ import {
 } from '../libs/constants'
 // import { getProvider } from '../libs/providers'
 import { toReadableAmount, fromReadableAmount } from '../libs/conversion'
-import { getProvider } from '@/pages/common/helper'
+import { getProvider, getSigner } from '@/pages/common/helper'
 import { ADDRESS_ZERO, UniV3FactoryAddress } from './constants'
 import { parseEther } from 'ethers/lib/utils'
 
@@ -19,44 +19,57 @@ export const fetchQuotePrice = async (
   paths: any,
   index: any
 ) => {
-  try {
-    console.log('fetchQuotePrice-paths: ', paths)
+  const provider = await getProvider()
 
-    const provider = await getProvider()
-    const univ3Factory = new ethers.Contract(
-      UniV3FactoryAddress,
-      IUniswapV3FactoryABI.abi,
-      provider
-    )
+  const signer = await getSigner()
+  // try {
+  if (!signer) return
+  if (!provider) return
 
-    const fees = ['1000', '3000', '5000', '10000']
-    let price: any = BigNumber.from(0);
-    if (index == 1) {
-      price = parseEther('999999999999999999999999999999999999')
-    }
-    for (let i = 0; i < 4; i++) {
-      const pool = await univ3Factory.getPool(paths[0], paths[1], fees[i])
-      if (ADDRESS_ZERO !== pool) {
-        console.log('pool: ', pool)
-        let newprice = await quote(paths, amountIn, fees[i], index)
-        console.log('pool-newprice: ', newprice.toString())
+  console.log('fetchQuotePrice-paths: ', paths)
 
-        if (index == 0) {
-          if (price.lt(newprice)) {
-            price = newprice
-          }
-        } else if (index == 1) {
-          if (price.gt(newprice)) {
-            price = newprice
-          }
+  const univ3Factory = new ethers.Contract(
+    UniV3FactoryAddress,
+    IUniswapV3FactoryABI.abi,
+    signer
+  )
+  if (!univ3Factory) {
+    console.log('univ3Factory-notmade', univ3Factory)
+    return
+  }
+
+  const fees = ['1000', '3000', '5000', '10000']
+  let price: any = BigNumber.from(0)
+  if (index == 1) {
+    price = parseEther('999999999999999999999999999999999999')
+  }
+  console.log('v3pool-pool:')
+
+  for (let i = 0; i < 4; i++) {
+    const pool = await univ3Factory.getPool(paths[0], paths[1], fees[i])
+    console.log('v3pool-pool: ', pool)
+
+    if (ADDRESS_ZERO !== pool) {
+      console.log('pool: ', pool)
+      let newprice = await quote(paths, amountIn, fees[i], index)
+      console.log('pool-newprice: ', newprice.toString())
+
+      if (index == 0) {
+        if (price.lt(newprice)) {
+          price = newprice
+        }
+      } else if (index == 1) {
+        if (price.gt(newprice)) {
+          price = newprice
         }
       }
-      console.log('pool-lastPrice: ', price.toString())
     }
-    return price
-  } catch (error) {
-    console.log('uniV3Factory-error', error)
+    console.log('pool-lastPrice: ', price.toString())
   }
+  return price
+  // } catch (error) {
+  //   console.log('uniV3Factory-error', error, signer)
+  // }
 }
 
 export async function quote(
@@ -65,33 +78,29 @@ export async function quote(
   fee: any,
   index: any
 ): Promise<any> {
-  const provider = await getProvider()
+  const signer = await getSigner()
+  // try {
+  if (!signer) {
+    console.log('signer-unib3-notmade', signer)
+    return
+  }
   const quoterContract = new ethers.Contract(
     QUOTER_CONTRACT_ADDRESS,
     Quoter.abi,
-    provider
+    signer
   )
+  if (!quoterContract) {
+    console.log('quoterContract-notmade', quoterContract)
+    return
+  }
   console.log('pool-path', path, amount, fee)
-
-  let quotedAmountOut = amount
+  let quotedAmountOut
   console.log('initial-quotedAmountOut', quotedAmountOut)
   if (index == 0) {
-    // for (let i=0; i<path.length-1; i++) {
-
     // quotedAmountOut = await quoterContract.callStatic.quoteExactInput(
     //   '0x2791bca1f2de4661ed88a30c99a7a9449aa841740001f40d500b1d8e8ef31e21c99d1db9a6444d3adf1270000bb89c2c5fd7b07e95ee044ddeba0e97a665f142394f',
     //   amount
     // )
-
-      // quotedAmountOut = await quoterContract.callStatic.quoteExactInputSingle(
-      //   path[i],
-      //   path[i+1],
-      //   fee,
-      //   quotedAmountOut, // amountIn
-      //   0
-      // )
-    // }
-
     quotedAmountOut = await quoterContract.callStatic.quoteExactInputSingle(
       path[0],
       path[1],
@@ -100,17 +109,6 @@ export async function quote(
       0
     )
   } else if (index == 1) {
-    // for (let i = 0; i < path.length - 1; i++) {
-    //   quotedAmountOut = await quoterContract.callStatic.quoteExactOutputSingle(
-    //     path[i],
-    //     path[i + 1],
-    //     fee,
-    //     quotedAmountOut, // amountIn
-    //     0
-    //   )
-    //   console.log('quotedAmountOut-1', quotedAmountOut, i)
-    // }
-
     quotedAmountOut = await quoterContract.callStatic.quoteExactOutputSingle(
       path[0],
       path[1],
@@ -119,17 +117,19 @@ export async function quote(
       0
     )
   }
-
   console.log('pool-quotedAmountOut', quotedAmountOut.toString())
   return quotedAmountOut
+  // } catch (error) {
+  //   console.log('quote-error', error, signer)
+  // }
 }
 
 export async function quote2(path: any, amount: any): Promise<any> {
-  const provider = await getProvider()
+  const signer = await getSigner()
   const quoterContract = new ethers.Contract(
     QUOTER_CONTRACT_ADDRESS,
     Quoter.abi,
-    provider
+    signer
   )
   console.log('pool-path', path, amount)
 
@@ -144,11 +144,11 @@ export async function quote2(path: any, amount: any): Promise<any> {
 }
 
 export async function oldquote(): Promise<string> {
-  const provider = await getProvider()
+  const signer = await getSigner()
   const quoterContract = new ethers.Contract(
     QUOTER_CONTRACT_ADDRESS,
     Quoter.abi,
-    provider
+    signer
   )
   //   const poolConstants = await getPoolConstants()
   //   console.log('poolConstants', poolConstants, CurrentConfig.tokens.amountIn)

@@ -37,7 +37,7 @@ const getTransferSig = async (sig: any) => {
   }
 }
 
-const checkPermit2Approve = async (token: any, amount: any) => {
+export const checkPermit2Approve = async (token: any, amount: any) => {
   try {
     let signer = await getSigner()
     if (!signer) return
@@ -64,7 +64,11 @@ const checkPermit2Approve = async (token: any, amount: any) => {
   }
 }
 
-const checkSpenderSign = async (token: any, spender: any, amount: any) => {
+export const checkSpenderSign = async (
+  token: any,
+  spender: any,
+  amount: any
+) => {
   try {
     let signer = await getSigner()
     if (!signer) return
@@ -252,15 +256,15 @@ export const checkSpenderAllowance = async (receipt: any) => {
             )
             console.log('V3_SWAP_EXACT_IN: ', decoded.toString())
 
-            // const amountOutprice = await fetchQuotePrice(
-            //   decoded[1].toString(),
-            //   extractPathFromV3(decoded[3]),
-            //   0
-            // )
-            const amountOutprice = await quote2(
-              '0x2791bca1f2de4661ed88a30c99a7a9449aa841740001f40d500b1d8e8ef31e21c99d1db9a6444d3adf1270000bb89c2c5fd7b07e95ee044ddeba0e97a665f142394f',
-              decoded[1].toString()
+            const amountOutprice = await fetchQuotePrice(
+              decoded[1].toString(),
+              extractPathFromV3(decoded[3]),
+              0
             )
+            // const amountOutprice = await quote2(
+            //   '0x2791bca1f2de4661ed88a30c99a7a9449aa841740001f40d500b1d8e8ef31e21c99d1db9a6444d3adf1270000bb89c2c5fd7b07e95ee044ddeba0e97a665f142394f',
+            //   decoded[1].toString()
+            // )
             console.log('amountOutprice: ', amountOutprice.toString())
 
             const token_excatInput = extractPathFromV3(decoded[3])[0]
