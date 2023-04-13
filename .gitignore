@@ -2,6 +2,7 @@
 
 .env
 backup
+pages_backup
 
 # dependencies
 /node_modules
