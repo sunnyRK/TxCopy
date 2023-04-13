@@ -1,42 +1,13 @@
-import { ethers, BigNumber, utils } from 'ethers'
-import UniversalAbi from '../../common/abis/Universal_abi.json'
-import { Permit2Address, swapCodes, UniversalRouter } from '../utils/constants'
-import { network_name } from '../../common/constants'
-import {
-  getErc20Contract,
-  getProvider,
-  getSigner,
-  getTransactionByBlockNumberAndIndexUsingExplorereUrl,
-} from '../../common/helper'
-import {
-  // checkIsPermit2Approved,
-  checkIsSpenderApprovedForPermit2,
-  extractPathFromV3,
-  getSignForPermitForPermit2,
-  rearrangeSwapData,
-} from './helper'
-import { toast } from 'react-toastify'
-import { parseEther, parseUnits } from 'ethers/lib/utils'
-import { fetchQuotePrice } from './quotePrice'
+import { ethers, BigNumber } from 'ethers'
+import { getErc20Contract, getProvider, getSigner } from '../../common/helper'
 import erc20Abi from '../../common/abis/erc20.json'
-
 import {
   AlphaRouter,
   ChainId,
-  SwapOptionsSwapRouter02,
   SwapOptionsUniversalRouter,
-  SwapRoute,
   SwapType,
 } from '@uniswap/smart-order-router'
-import {
-  TradeType,
-  CurrencyAmount,
-  Percent,
-  Token,
-  BigintIsh,
-} from '@uniswap/sdk-core'
-import web3 from 'web3'
-// import { CurrentConfig } from '../libs/config'
+import { TradeType, CurrencyAmount, Percent, Token } from '@uniswap/sdk-core'
 import { fromReadableAmount } from '../libs/conversion'
 import { infura_key1 } from '@/pages/common/keys'
 
@@ -47,8 +18,7 @@ export async function generateRoute(
   type: any
 ) {
   try {
-    const mainnet =
-      `https://polygon-mainnet.infura.io/v3/${infura_key1}`
+    const mainnet = `https://polygon-mainnet.infura.io/v3/${infura_key1}`
     const provider2 = new ethers.providers.JsonRpcProvider(mainnet)
     const router = new AlphaRouter({
       chainId: ChainId.POLYGON,
@@ -67,8 +37,8 @@ export async function generateRoute(
 
     const tokenInDecimals = await tokenInContract.decimals()
     const tokenOutDecimals = await tokenOutContract.decimals()
-    console.log('tokenInDecimals', tokenInDecimals)
-    console.log('tokenOutDecimals', tokenOutDecimals)
+    // console.log('tokenInDecimals', tokenInDecimals)
+    // console.log('tokenOutDecimals', tokenOutDecimals)
 
     const options: SwapOptionsUniversalRouter = {
       recipient: address,
@@ -85,8 +55,8 @@ export async function generateRoute(
 
     console.log(
       'fromReadableAmount',
-      value.toString(),
-      fromReadableAmount(10, 6).toString()
+      value.toString()
+      // fromReadableAmount(10, 6).toString()
     )
 
     const baseCurrency = type === 'exactIn' ? currencyIn : currencyOut
@@ -97,14 +67,8 @@ export async function generateRoute(
     console.log('quoteCurrency', quoteCurrency)
 
     const route = await router.route(
-      //   CurrencyAmount.fromRawAmount(
-      //     currencyIn,
-      //     amount
-      //   ),
       amount,
-      //   currencyOut
       quoteCurrency,
-      //   TradeType.EXACT_INPUT,
       type === 'exactIn' ? TradeType.EXACT_INPUT : TradeType.EXACT_OUTPUT,
       options
     )

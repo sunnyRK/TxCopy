@@ -50,7 +50,7 @@ export const AAVE = new Token(
 //   env: Environment.WALLET_EXTENSION,
 //   rpc: {
 //     local: 'http://localhost:8545',
-    // mainnet: `https://mainnet.infura.io/v3/${infura_key2}`,
+// mainnet: `https://mainnet.infura.io/v3/${infura_key2}`,
 //   },
 //   wallet: {
 //     address: '0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266',

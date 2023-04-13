@@ -1,20 +1,15 @@
-import web3 from 'web3'
 import { BigNumber, ethers } from 'ethers'
 import { getImplementationAddress } from '@openzeppelin/upgrades-core'
 import Permit2Abi from '../../common/abis/Permit2.json'
 import {
   ABI_DEFINITION,
-  ADDRESS_THIS,
-  ALLOW_REVERT_FLAG,
   CommandType,
-  MSG_SENDER,
   Permit2Address,
-  REVERTIBLE_COMMANDS,
   RouterCommand,
 } from './constants'
 import { PermitSingle } from '@/pages/Uniswap/utils/constants'
 import { encodePathExactInput, getPermitSignature } from './permit2'
-import { defaultAbiCoder, parseEther } from 'ethers/lib/utils'
+import { defaultAbiCoder } from 'ethers/lib/utils'
 import {
   getDeadline,
   getErc20Contract,
@@ -23,6 +18,68 @@ import {
   makeContract,
 } from '@/pages/common/helper'
 import erc20Abi from '../../common/abis/erc20.json'
+
+export const checkPermit2Approve = async (token: any, amount: any) => {
+  try {
+    let signer = await getSigner()
+    if (!signer) return
+    let address = await signer.getAddress()
+
+    const allowedForPermit2 = await checkIsPermit2Approved(
+      token.toString(),
+      address,
+      Permit2Address,
+      amount
+    )
+    console.log('allowedForPermit2: ', allowedForPermit2)
+
+    // if not allowed then give approve
+    if (!allowedForPermit2) {
+      const tokenContract = await getErc20Contract(token.toString())
+      const approveTx = await tokenContract
+        ?.connect(signer)
+        .approve(Permit2Address, BigNumber.from(amount))
+      await approveTx.wait()
+    }
+  } catch (error) {
+    console.log('checkPermit2Approve-error: ', error)
+  }
+}
+
+export const checkSpenderSign = async (
+  token: any,
+  spender: any,
+  amount: any
+) => {
+  try {
+    let signer = await getSigner()
+    if (!signer) return
+    let address = await signer.getAddress()
+
+    const allowedForRouter = await checkIsSpenderApprovedForPermit2(
+      address,
+      token,
+      spender,
+      amount
+    )
+    console.log('allowedForRouter: ', allowedForRouter)
+
+    let command
+    if (!allowedForRouter) {
+      command = await getSignForPermitForPermit2(
+        {
+          contractAddress: token.toString(),
+          amountIn: BigNumber.from(amount),
+        },
+        spender
+      )
+      if (!command) return
+    }
+    return command
+  } catch (error) {
+    console.log('checkSpenderSign-error: ', error)
+  }
+}
 
 export const checkIsPermit2Approved = async (
   token: string,
@@ -37,24 +94,11 @@ export const checkIsPermit2Approved = async (
     if (!provider) return
     if (!signer) return
     tokenContract = new ethers.Contract(token, erc20Abi, signer)
-    console.log('checkIsPermit2Approved-from++++', from, spender, tokenContract)
     const allowance = await tokenContract
       .connect(signer)
       .allowance(from, spender)
-    // console.log(
-    //   'checkIsPermit2Approved-after++++',
-    //   from,
-    //   spender,
-    //   tokenContract
-    // )
-    // console.log('checkIsPermit2Approved-allowance', token, allowance.toString())
-    // console.log('checkIsPermit2Approved-amount', amount.toString())
     if (BigNumber.from(allowance).gte(BigNumber.from(amount.toString()))) {
-      // console.log('ifBigNumber')
       return true
-    } else {
-      // console.log('elseBigNumber')
-      // return false
     }
     return false
   } catch (error) {
@@ -74,38 +118,10 @@ export const checkIsSpenderApprovedForPermit2 = async (
     if (!provider) return
     if (!signer) return
 
-    // const permit2 = await makeContract(Permit2Address, Permit2Abi.abi)
     const permit2 = new ethers.Contract(Permit2Address, Permit2Abi.abi, signer)
-    // console.log(
-    //   'checkIsSpenderApprovedForPermit2-from',
-    //   from,
-    //   token,
-    //   spender,
-    //   permit2
-    // )
-    // if (!permit2) {
-    //   console.log('permit2-notmade', permit2)
-    //   return
-    // }
-    // console.log(
-    //   'checkIsSpenderApprovedForPermit2-from-2',
-    //   from,
-    //   token,
-    //   spender,
-    //   permit2
-    // )
-
-    const code = await provider.getCode(Permit2Address)
-
-    // if (!permit2) return
     const allowance = await permit2
       .connect(signer)
       .allowance(from, token, spender)
-    // console.log(
-    //   'checkIsSpenderApprovedForPermit2-allowance',
-    //   allowance.toString()
-    // )
-    // console.log('checkIsSpenderApprovedForPermit2-amount', amount.toString())
     if (allowance.amount.gte(BigNumber.from(amount.toString()))) {
       const currentDeadline = await getDeadline(120)
       if (
@@ -152,75 +168,6 @@ export const checkIfContractIsProxy = async (abi: any, contratAddress: any) => {
   }
 }
 
-export const parseInput = async (
-  data: any,
-  argsInBytes: any,
-  universalRouter: any
-) => {
-  try {
-    let signer = await getSigner()
-    if (!signer) return
-    let address = await signer.getAddress()
-    let token0 = data.path[0]
-    let amountIn = data.amountIn
-
-    let commands = '0x'
-    let inputs = []
-
-    const allowedForPermit2 = await checkIsPermit2Approved(
-      token0,
-      address,
-      Permit2Address,
-      amountIn
-    )
-    console.log('allowedForPermit2: ', allowedForPermit2)
-
-    // if not allowed then give approve
-    if (!allowedForPermit2) {
-      const tokenContract = await getErc20Contract(token0)
-      const approveTx = await tokenContract
-        ?.connect(signer)
-        .approve(Permit2Address, amountIn)
-      await approveTx.wait()
-    }
-
-    const allowedForRouter = await checkIsSpenderApprovedForPermit2(
-      address,
-      token0,
-      universalRouter,
-      amountIn
-    )
-    if (!allowedForRouter) {
-      const command = await getSignForPermit(data, universalRouter)
-      if (!command) return
-      inputs.push(command.encodedInput)
-      commands = commands.concat(command.type.toString(16).padStart(2, '0'))
-    }
-
-    if (argsInBytes[1].length > 1) {
-      inputs.push(argsInBytes[1][1])
-    } else {
-      inputs.push(argsInBytes[1][0])
-    }
-
-    const swapCommand = await rearrangeSwapData(data)
-    console.log('swapCommand-2: ', swapCommand)
-
-    if (!swapCommand) return
-    commands = commands.concat(swapCommand.type.toString(16).padStart(2, '0'))
-
-    const deadline = await getDeadline(1800)
-
-    console.log('inputs: ', inputs)
-    console.log('commands: ', commands)
-    console.log('deadline: ', deadline)
-
-    return { inputs, commands, deadline }
-  } catch (error) {
-    console.log('parseInput-Error: ', error)
-  }
-}
-
 export const getSignForPermitForPermit2 = async (
   data: any,
   universalRouter: any
@@ -251,43 +198,18 @@ export const getSignForPermitForPermit2 = async (
     ])
     return commands
   } catch (error) {
-    console.log('signPermit-Error: ', error)
+    console.log('getSignForPermitForPermit2-Error: ', error)
   }
 }
 
-export const getSignForPermit = async (data: any, universalRouter: any) => {
-  try {
-    let provider = new ethers.providers.Web3Provider(web3.givenProvider)
-    const signer: any = provider.getSigner()
-    const permit: PermitSingle = {
-      details: {
-        token: data.path[0],
-        amount: BigNumber.from(data.amountIn), // weth amount
-        expiration: BigNumber.from('0'), // expiration of 0 is block.timestamp
-        nonce: BigNumber.from('0'), // this is his first trade
-      },
-      spender: universalRouter,
-      sigDeadline: BigNumber.from(await getDeadline(1000)),
-    }
-
-    const permit2 = await makeContract(Permit2Address, Permit2Abi.abi)
-    const sig = await getPermitSignature(permit, signer, permit2)
-    // const path = encodePathExactInput([data.path[0], data.path[1]])
-
-    return await createCommand(CommandType.PERMIT2_PERMIT, [permit, sig])
-  } catch (error) {
-    console.log('signPermit-Error: ', error)
-  }
-}
-
-export const rearrangeSwapData = async (data: any) => {
+export const rearrangeSwapData = async (data: any, fees: any) => {
   try {
     let swapCommand
     let makeSwapData
     let commandType
     let path
     if (data.path) {
-      path = encodePathExactInput(data.path)
+      path = encodePathExactInput(data.path, fees)
       console.log('path', data.path, path)
     } else {
       path = data.path
@@ -337,6 +259,8 @@ export const rearrangeSwapData = async (data: any) => {
       makeSwapData = [data.recipient, 0]
       commandType = CommandType.UNWRAP_WETH
     }
+    console.log('makeSwapData-1', makeSwapData)
+    console.log('commandType-1', commandType)
 
     if (!makeSwapData) {
       alert('!makeSwapData')
@@ -385,24 +309,118 @@ export function createCommand(
   return { type, encodedInput }
 }
 
-export const addCommand = async (
-  type: CommandType,
-  parameters: any[],
-  allowRevert = false
-) => {
-  let commands = ''
-  let inputs = []
+// export const addCommand = async (
+//   type: CommandType,
+//   parameters: any[],
+//   allowRevert = false
+// ) => {
+//   let commands = ''
+//   let inputs = []
 
-  let command = createCommand(type, parameters)
-  inputs.push(command.encodedInput)
-  if (allowRevert) {
-    if (!REVERTIBLE_COMMANDS.has(command.type)) {
-      throw new Error(
-        `command type: ${command.type} cannot be allowed to revert`
-      )
-    }
-    command.type = command.type | ALLOW_REVERT_FLAG
-  }
+//   let command = createCommand(type, parameters)
+//   inputs.push(command.encodedInput)
+//   if (allowRevert) {
+//     if (!REVERTIBLE_COMMANDS.has(command.type)) {
+//       throw new Error(
+//         `command type: ${command.type} cannot be allowed to revert`
+//       )
+//     }
+//     command.type = command.type | ALLOW_REVERT_FLAG
+//   }
 
-  commands = commands.concat(command.type.toString(16).padStart(2, '0'))
-}
+//   commands = commands.concat(command.type.toString(16).padStart(2, '0'))
+// }
+
+// export const parseInput = async (
+//   data: any,
+//   argsInBytes: any,
+//   universalRouter: any
+// ) => {
+//   try {
+//     let signer = await getSigner()
+//     if (!signer) return
+//     let address = await signer.getAddress()
+//     let token0 = data.path[0]
+//     let amountIn = data.amountIn
+
+//     let commands = '0x'
+//     let inputs = []
+
+//     const allowedForPermit2 = await checkIsPermit2Approved(
+//       token0,
+//       address,
+//       Permit2Address,
+//       amountIn
+//     )
+//     console.log('allowedForPermit2: ', allowedForPermit2)
+
+//     // if not allowed then give approve
+//     if (!allowedForPermit2) {
+//       const tokenContract = await getErc20Contract(token0)
+//       const approveTx = await tokenContract
+//         ?.connect(signer)
+//         .approve(Permit2Address, amountIn)
+//       await approveTx.wait()
+//     }
+
+//     const allowedForRouter = await checkIsSpenderApprovedForPermit2(
+//       address,
+//       token0,
+//       universalRouter,
+//       amountIn
+//     )
+//     if (!allowedForRouter) {
+//       const command = await getSignForPermit(data, universalRouter)
+//       if (!command) return
+//       inputs.push(command.encodedInput)
+//       commands = commands.concat(command.type.toString(16).padStart(2, '0'))
+//     }
+
+//     if (argsInBytes[1].length > 1) {
+//       inputs.push(argsInBytes[1][1])
+//     } else {
+//       inputs.push(argsInBytes[1][0])
+//     }
+
+//     const swapCommand = await rearrangeSwapData(data)
+//     console.log('swapCommand-2: ', swapCommand)
+
+//     if (!swapCommand) return
+//     commands = commands.concat(swapCommand.type.toString(16).padStart(2, '0'))
+
+//     const deadline = await getDeadline(1800)
+
+//     console.log('inputs: ', inputs)
+//     console.log('commands: ', commands)
+//     console.log('deadline: ', deadline)
+
+//     return { inputs, commands, deadline }
+//   } catch (error) {
+//     console.log('parseInput-Error: ', error)
+//   }
+// }
+
+// export const getSignForPermit = async (data: any, universalRouter: any) => {
+//   try {
+//     let provider = new ethers.providers.Web3Provider(web3.givenProvider)
+//     const signer: any = provider.getSigner()
+//     const permit: PermitSingle = {
+//       details: {
+//         token: data.path[0],
+//         amount: BigNumber.from(data.amountIn), // weth amount
+//         expiration: BigNumber.from('0'), // expiration of 0 is block.timestamp
+//         nonce: BigNumber.from('0'), // this is his first trade
+//       },
+//       spender: universalRouter,
+//       sigDeadline: BigNumber.from(await getDeadline(1000)),
+//     }
+
+//     const permit2 = await makeContract(Permit2Address, Permit2Abi.abi)
+//     const sig = await getPermitSignature(permit, signer, permit2)
+//     // const path = encodePathExactInput([data.path[0], data.path[1]])
+
+//     return await createCommand(CommandType.PERMIT2_PERMIT, [permit, sig])
+//   } catch (error) {
+//     console.log('signPermit-Error: ', error)
+//   }
+// }

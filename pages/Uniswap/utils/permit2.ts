@@ -87,8 +87,9 @@ export function encodePath(path: string[], fees: any[]): string {
   return encoded.toLowerCase()
 }
 
-export function encodePathExactInput(tokens: string[]) {
-  return encodePath(tokens, new Array(tokens.length - 1).fill(3000))
+export function encodePathExactInput(tokens: string[], fees: any) {
+  return encodePath(tokens, fees)
+  // return encodePath(tokens, new Array(tokens.length - 1).fill(3000))
 }
 
 export function getEip712Domain(chainId: number, verifyingContract: string) {

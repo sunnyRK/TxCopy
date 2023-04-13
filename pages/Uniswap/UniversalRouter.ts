@@ -9,7 +9,6 @@ import {
   getSigner,
 } from '../common/helper'
 import { checkSpenderAllowance } from './utils/parseUniData'
-import { parseEther } from 'ethers/lib/utils'
 
 export const makeTx = async (txHash: string, onlycheck: any) => {
   try {
@@ -59,23 +58,33 @@ export const makeTx = async (txHash: string, onlycheck: any) => {
 
     if (!inputs?.commands && !inputs?.inputs) return
 
-    const deadlines = await getDeadline(1800)
-    const datas = abiInterface.encodeFunctionData(decodedInput.name, [
-      inputs?.commands,
-      inputs?.inputs,
-      deadlines,
-    ])
+    let datas
+    if (decodedInput.args.length === 3) {
+      console.log('length-1', decodedInput.args.length);
+      const deadlines = await getDeadline(1800)
+      datas = abiInterface.encodeFunctionData(decodedInput.name, [
+        inputs?.commands,
+        inputs?.inputs,
+        deadlines,
+      ])
+    } else {
+      console.log('length-2', decodedInput.args.length);
+      datas = abiInterface.encodeFunctionData(decodedInput.name, [
+        inputs?.commands,
+        inputs?.inputs
+      ])
+    }
 
     let copyTx
-    if (!onlycheck) {
+    // if (!onlycheck) {
       copyTx = await signer.sendTransaction({
         to: receipt.to,
         data: datas,
-        value: inputs.value,
+        value: inputs.value
       })
       toast.success(`UniV3 Tx done successfully.`)
       console.log('UnicopyTx', copyTx)
-    }
+    // }
     return {
       txInfo: txInfo,
       txCallData: decodedInput,
