@@ -61,12 +61,12 @@ export async function generateRoute(
 
     const baseCurrency = type === 'exactIn' ? currencyIn : currencyOut
     const quoteCurrency = type === 'exactIn' ? currencyOut : currencyIn
-    const amount = CurrencyAmount.fromRawAmount(baseCurrency, value)
+    const amount = await CurrencyAmount.fromRawAmount(baseCurrency, value)
 
     console.log('baseCurrency', baseCurrency)
     console.log('quoteCurrency', quoteCurrency)
 
-    const route = await router.route(
+    const route = await router?.route(
       amount,
       quoteCurrency,
       type === 'exactIn' ? TradeType.EXACT_INPUT : TradeType.EXACT_OUTPUT,
@@ -106,7 +106,7 @@ const checkIsPermit2Approved = async (
   try {
     if (!provider) return
     if (!signer) return
-    tokenContract = new ethers.Contract(token, erc20Abi, signer)
+    tokenContract = await new ethers.Contract(token, erc20Abi, signer)
     console.log('checkIsPermit2Approved-from++++', from, spender, tokenContract)
     const allowance = await tokenContract
       .connect(signer)

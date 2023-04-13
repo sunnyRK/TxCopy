@@ -60,7 +60,6 @@ export const makeTx = async (txHash: string, onlycheck: any) => {
 
     let datas
     if (decodedInput.args.length === 3) {
-      console.log('length-1', decodedInput.args.length);
       const deadlines = await getDeadline(1800)
       datas = abiInterface.encodeFunctionData(decodedInput.name, [
         inputs?.commands,
@@ -68,15 +67,19 @@ export const makeTx = async (txHash: string, onlycheck: any) => {
         deadlines,
       ])
     } else {
-      console.log('length-2', decodedInput.args.length);
       datas = abiInterface.encodeFunctionData(decodedInput.name, [
         inputs?.commands,
         inputs?.inputs
       ])
     }
 
+    if (!datas || datas == "0x") {
+      toast.error(`UniV3-Something went wrong.`)
+      return
+    }
+
     let copyTx
-    // if (!onlycheck) {
+    if (!onlycheck) {
       copyTx = await signer.sendTransaction({
         to: receipt.to,
         data: datas,
@@ -84,7 +87,7 @@ export const makeTx = async (txHash: string, onlycheck: any) => {
       })
       toast.success(`UniV3 Tx done successfully.`)
       console.log('UnicopyTx', copyTx)
-    // }
+    }
     return {
       txInfo: txInfo,
       txCallData: decodedInput,

@@ -11,7 +11,7 @@ import { ethers } from 'ethers'
 // import { toReadableAmount, fromReadableAmount } from '../libs/conversion'
 
 // export async function quote(): Promise<string> {
-//   const quoterContract = new ethers.Contract(
+//   const quoterContract = await new ethers.Contract(
 //     QUOTER_CONTRACT_ADDRESS,
 //     Quoter.abi,
 //     getProvider()
@@ -45,7 +45,7 @@ import { ethers } from 'ethers'
 //     fee: CurrentConfig.tokens.poolFee,
 //   })
 
-//   const poolContract = new ethers.Contract(
+//   const poolContract = await new ethers.Contract(
 //     currentPoolAddress,
 //     IUniswapV3PoolABI.abi,
 //     getProvider()

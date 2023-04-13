@@ -121,12 +121,9 @@ export async function getPermitSignature(
 ): Promise<string> {
   // look up the correct nonce for this permit
   const address = await signer.getAddress()
-  console.log('address++', address, permit.details.token, permit.spender)
-  console.log('address+++', permit, permit.spender)
   const nextNonce = (
     await permit2.allowance(address, permit.details.token, permit.spender)
   ).nonce
-  console.log('nextNonce++', nextNonce)
   permit.details.nonce = nextNonce
   return await signPermit(permit, signer, permit2.address)
 }

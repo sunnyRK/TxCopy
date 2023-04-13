@@ -80,7 +80,7 @@ export const makeContract = async (contractAddress: string, abi: any) => {
   try {
     let signer = await getSigner()
     if (!signer) return
-    const contract = new ethers.Contract(contractAddress, abi, signer)
+    const contract = await new ethers.Contract(contractAddress, abi, signer)
     return contract
   } catch (error) {
     console.log('Erc20Contract-Error: ', error)
@@ -89,7 +89,7 @@ export const makeContract = async (contractAddress: string, abi: any) => {
 
 export const getProvider = async () => {
   try {
-    let provider = new ethers.providers.Web3Provider(web3.givenProvider)
+    let provider = await new ethers.providers.Web3Provider(web3.givenProvider)
     return provider
   } catch (error) {
     console.log('Erc20Contract-Error: ', error)

@@ -93,9 +93,11 @@ export const checkIsPermit2Approved = async (
   try {
     if (!provider) return
     if (!signer) return
-    tokenContract = new ethers.Contract(token, erc20Abi, signer)
+    tokenContract = await getErc20Contract(token)
+    if (!tokenContract) return
+
     const allowance = await tokenContract
-      .connect(signer)
+      ?.connect(signer)
       .allowance(from, spender)
     if (BigNumber.from(allowance).gte(BigNumber.from(amount.toString()))) {
       return true
@@ -118,10 +120,10 @@ export const checkIsSpenderApprovedForPermit2 = async (
     if (!provider) return
     if (!signer) return
 
-    const permit2 = new ethers.Contract(Permit2Address, Permit2Abi.abi, signer)
-    const allowance = await permit2
-      .connect(signer)
-      .allowance(from, token, spender)
+    const permit2 = await makeContract(Permit2Address, Permit2Abi.abi)
+    if (!permit2) return
+
+    const allowance = await permit2?.connect(signer).allowance(from, token, spender)
     if (allowance.amount.gte(BigNumber.from(amount.toString()))) {
       const currentDeadline = await getDeadline(120)
       if (
@@ -209,7 +211,7 @@ export const rearrangeSwapData = async (data: any, fees: any) => {
     let commandType
     let path
     if (data.path) {
-      path = encodePathExactInput(data.path, fees)
+      path = await encodePathExactInput(data.path, fees)
       console.log('path', data.path, path)
     } else {
       path = data.path

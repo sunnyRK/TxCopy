@@ -38,7 +38,7 @@ export const checkSpenderAllowance = async (receipt: any, onlycheck: any) => {
 
     const WithdrawBytesAfterKeccak = "0x7fcf532c15f0a6db0bd6d0e038bea71d30d808c7d98cb3bf7268a95bf5081b65"
 
-    console.log('\n', receipt.logs.length)
+    // console.log('\n', receipt.logs.length)
 
     let amountIn: BigNumber = BigNumber.from('0')
     let tokenIn
@@ -56,8 +56,8 @@ export const checkSpenderAllowance = async (receipt: any, onlycheck: any) => {
           console.log('\n')
           amountIn = amountIn.add(value.toString())
           tokenIn = receipt.logs[i].address.toString()
-          console.log('tokenIn:', tokenIn.toString())
-          console.log('amountIn:', amountIn.toString())
+          // console.log('tokenIn:', tokenIn.toString())
+          // console.log('amountIn:', amountIn.toString())
 
           const makeSwapData = [ADDRESS_THIS, amountIn]
           const commandType = CommandType.WRAP_ETH
@@ -67,8 +67,8 @@ export const checkSpenderAllowance = async (receipt: any, onlycheck: any) => {
             inputs.push(swapCommand.encodedInput)
             commands = commands.concat(swapCommand.type.toString(16).padStart(2, '0'))
           }
-          console.log('commands:', commands.toString())
-          console.log('inputs:', inputs.toString())
+          // console.log('commands:', commands.toString())
+          // console.log('inputs:', inputs.toString())
 
           depositWETH = amountIn
       }
@@ -92,10 +92,10 @@ export const checkSpenderAllowance = async (receipt: any, onlycheck: any) => {
           receipt.from.toString().toLowerCase()
         ) {
           console.log('\n')
-          console.log('token:', token.toString())
-          console.log('from:', from.toString())
-          console.log('receipt.from:', receipt.from.toString())
-          console.log('value:', value.toString())
+          // console.log('token:', token.toString())
+          // console.log('from:', from.toString())
+          // console.log('receipt.from:', receipt.from.toString())
+          // console.log('value:', value.toString())
           amountIn = amountIn.add(value.toString())
           tokenIn = receipt.logs[i].address.toString()
         } else if (
@@ -110,9 +110,9 @@ export const checkSpenderAllowance = async (receipt: any, onlycheck: any) => {
         tokenOut = receipt.logs[i].address.toString()
       }
     }
-    console.log('amountIn:', amountIn.toString())
-    console.log('tokenIn:', tokenIn.toString())
-    console.log('tokenOut:', tokenOut.toString())
+    // console.log('amountIn:', amountIn.toString())
+    // console.log('tokenIn:', tokenIn.toString())
+    // console.log('tokenOut:', tokenOut.toString())
 
     const tokenInContract = await getErc20Contract(tokenIn)
     const tokenOutContract = await getErc20Contract(tokenOut)
@@ -137,11 +137,11 @@ export const checkSpenderAllowance = async (receipt: any, onlycheck: any) => {
       inputs.push(command.encodedInput)
       commands = commands.concat(command.type.toString(16).padStart(2, '0'))
     }
-    console.log('commands:', commands.toString())
-    console.log('inputs:', inputs.toString())
+    // console.log('commands:', commands.toString())
+    // console.log('inputs:', inputs.toString())
 
     for (let i = 0; i < route?.route.length; i++) {
-      console.log('for loop index: ', i, route?.route.length)
+      // console.log('for loop index: ', i, route?.route.length)
       const tokenInDecimals = await tokenInContract?.decimals()
       const tokenOutDecimals = await tokenOutContract?.decimals()
       const amountInprice: any = route?.trade.swaps[i].inputAmount.toExact()
@@ -168,20 +168,20 @@ export const checkSpenderAllowance = async (receipt: any, onlycheck: any) => {
         fees.push(route.trade.routes[i].pools[j].fee)
       }
 
-      console.log('tokenInDecimals: ', tokenInDecimals.toString())
-      console.log('tokenOutDecimals: ', tokenOutDecimals.toString())
+      // console.log('tokenInDecimals: ', tokenInDecimals.toString())
+      // console.log('tokenOutDecimals: ', tokenOutDecimals.toString())
 
       console.log(
         '_amountInprice: ',
         amountInprice.toString(),
         _amountInprice.toString()
       )
-      console.log(
-        '_amountOutprice: ',
-        amountOutprice.toString(),
-        _amountOutprice.toString()
-      )
-      console.log('totalFees+', totalFees.toString())
+      // console.log(
+      //   '_amountOutprice: ',
+      //   amountOutprice.toString(),
+      //   _amountOutprice.toString()
+      // )
+      // console.log('totalFees+', totalFees.toString())
 
       _amountOutprice = _amountOutprice.sub(
         _amountOutprice.mul(totalFees).div(1e6)
@@ -192,7 +192,7 @@ export const checkSpenderAllowance = async (receipt: any, onlycheck: any) => {
       for (let j = 0; j < tokenPath?.length; j++) {
         newPath.push(route?.route[i].tokenPath[j].address)
       }
-      console.log('newPath-after: ', newPath)
+      // console.log('newPath-after: ', newPath)
 
       const makeSwapData = {
         function: swapCodes['00'],
@@ -216,8 +216,6 @@ export const checkSpenderAllowance = async (receipt: any, onlycheck: any) => {
       }
     }
 
-    console.log('commands-2:', commands.toString())
-    console.log('inputs-2:', inputs.toString())
 
     if (isUnWrapEth) {
       const makeSwapData = [MSG_SENDER, 0]
@@ -228,9 +226,12 @@ export const checkSpenderAllowance = async (receipt: any, onlycheck: any) => {
         inputs.push(swapCommand.encodedInput)
         commands = commands.concat(swapCommand.type.toString(16).padStart(2, '0'))
       }
-      console.log('commands-UNWRAP_WETH:', commands.toString())
-      console.log('inputs-UNWRAP_WETH:', inputs.toString())
+      // console.log('commands-UNWRAP_WETH:', commands.toString())
+      // console.log('inputs-UNWRAP_WETH:', inputs.toString())
     }
+
+    console.log('commands-2:', commands.toString())
+    console.log('inputs-2:', inputs.toString())
 
     // // check swaps
     // const txIndex = BigNumber.from(receipt.transactionIndex).toHexString()
