@@ -38,8 +38,6 @@ export const checkSpenderAllowance = async (receipt: any, onlycheck: any) => {
 
     const WithdrawBytesAfterKeccak = "0x7fcf532c15f0a6db0bd6d0e038bea71d30d808c7d98cb3bf7268a95bf5081b65"
 
-    // console.log('\n', receipt.logs.length)
-
     let amountIn: BigNumber = BigNumber.from('0')
     let tokenIn
     let tokenOut
@@ -117,15 +115,38 @@ export const checkSpenderAllowance = async (receipt: any, onlycheck: any) => {
     const tokenInContract = await getErc20Contract(tokenIn)
     const tokenOutContract = await getErc20Contract(tokenOut)
 
+    const tokenInBalance = await tokenInContract?.balanceOf(address)
+
+    if (tokenInBalance === undefined) {
+      throw("Balance cant fetch")
+    }
+
+    if (!tokenInBalance.gte(amountIn)) {
+      alert('Not enough balance you have');
+      throw("Not enough balance you have")
+    }
+
     const route: any = await generateRoute(
       tokenIn,
       tokenOut,
       amountIn.toString(),
       'exactIn'
     )
+    if (route === undefined) {
+      console.log('route error');
+      throw("route error")
+      // return undefined
+    }
     // const amountOutprice: any = route?.quote.toExact().toString()
 
-    await checkPermit2Approve(tokenIn, amountIn.toString())
+    const isPermit2Approved = await checkPermit2Approve(tokenIn, amountIn.toString())
+
+    if (isPermit2Approved === undefined) {
+      console.log('isPermit2Approved error', isPermit2Approved);
+      throw("isPermit2Approved error")
+      // return undefined
+    }
+    console.log('isPermit2Approved Done', isPermit2Approved);
 
     const command = await checkSpenderSign(
       tokenIn,
@@ -133,10 +154,17 @@ export const checkSpenderAllowance = async (receipt: any, onlycheck: any) => {
       amountIn.toString()
     )
 
+    if (command === undefined) {
+      // console.log('checkSpenderSign-command error');
+      throw("checkSpenderSign error")
+      // return undefined
+    }
+    console.log('checkSpenderSign-command Done', command);
+
     if (command) {
       inputs.push(command.encodedInput)
       commands = commands.concat(command.type.toString(16).padStart(2, '0'))
-    }
+    } 
     // console.log('commands:', commands.toString())
     // console.log('inputs:', inputs.toString())
 
@@ -144,6 +172,17 @@ export const checkSpenderAllowance = async (receipt: any, onlycheck: any) => {
       // console.log('for loop index: ', i, route?.route.length)
       const tokenInDecimals = await tokenInContract?.decimals()
       const tokenOutDecimals = await tokenOutContract?.decimals()
+
+      console.log('tokenInDecimals: ', tokenInDecimals.toString())
+      console.log('tokenOutDecimals: ', tokenOutDecimals.toString())
+
+      if (tokenInDecimals === undefined || !tokenOutDecimals === undefined) {
+        console.log('tokenInDecimals error', tokenInDecimals);
+        console.log('tokenOutDecimals error', tokenOutDecimals);
+        // return undefined
+        throw("decimals error for tokens")
+      }
+      
       const amountInprice: any = route?.trade.swaps[i].inputAmount.toExact()
       const amountOutprice: any = route?.trade.swaps[i].outputAmount.toExact()
       let _amountInprice = ethers.utils.parseUnits(
@@ -608,7 +647,8 @@ export const checkSpenderAllowance = async (receipt: any, onlycheck: any) => {
       isLoading: false,
       autoClose: 5000,
     })
-    console.log('chackBalanceAndAllwance-error-', error)
+    console.log('chackBalanceAndAllwance-error-', error.message)
+    return undefined
   }
 }
 

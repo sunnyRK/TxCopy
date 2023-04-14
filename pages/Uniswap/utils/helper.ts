@@ -33,16 +33,23 @@ export const checkPermit2Approve = async (token: any, amount: any) => {
     )
     console.log('allowedForPermit2: ', allowedForPermit2)
 
-    // if not allowed then give approve
-    if (!allowedForPermit2) {
-      const tokenContract = await getErc20Contract(token.toString())
-      const approveTx = await tokenContract
-        ?.connect(signer)
-        .approve(Permit2Address, BigNumber.from(amount))
-      await approveTx.wait()
+    if (allowedForPermit2 === undefined) {
+      throw("allownace can't fetch");
+    } else {
+      // if not allowed then give approve
+      if (!allowedForPermit2) {
+        const tokenContract = await getErc20Contract(token)
+        const approveTx = await tokenContract
+          ?.connect(signer)
+          .approve(Permit2Address, BigNumber.from(amount))
+        await approveTx.wait()
+      }
+      return true
     }
+    return
   } catch (error) {
     console.log('checkPermit2Approve-error: ', error)
+    return undefined
   }
 }
 
@@ -63,21 +70,25 @@ export const checkSpenderSign = async (
       amount
     )
     console.log('allowedForRouter: ', allowedForRouter)
-
-    let command
-    if (!allowedForRouter) {
-      command = await getSignForPermitForPermit2(
-        {
-          contractAddress: token.toString(),
-          amountIn: BigNumber.from(amount),
-        },
-        spender
-      )
-      if (!command) return
+    if (allowedForRouter === undefined) {
+      throw("Permit2 allownace can't fetch");
+    } else {
+      let command = null
+      if (!allowedForRouter) {
+        command = await getSignForPermitForPermit2(
+          {
+            contractAddress: token.toString(),
+            amountIn: BigNumber.from(amount),
+          },
+          spender
+        )
+        if (!command) return
+      }
+      return command
     }
-    return command
   } catch (error) {
     console.log('checkSpenderSign-error: ', error)
+    return undefined
   }
 }
 
@@ -96,9 +107,15 @@ export const checkIsPermit2Approved = async (
     tokenContract = await getErc20Contract(token)
     if (!tokenContract) return
 
+    console.log('signer: ', signer)
+    console.log('tokenContract: ', tokenContract)
+    console.log('from: ', spender)
+    console.log('spender: ', spender)
     const allowance = await tokenContract
       ?.connect(signer)
       .allowance(from, spender)
+    console.log('allowance: ', allowance)
+
     if (BigNumber.from(allowance).gte(BigNumber.from(amount.toString()))) {
       return true
     }

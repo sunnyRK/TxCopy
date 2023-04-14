@@ -35,8 +35,17 @@ export async function generateRoute(
 
     if (!tokenInContract || !tokenOutContract) return
 
-    const tokenInDecimals = await tokenInContract.decimals()
-    const tokenOutDecimals = await tokenOutContract.decimals()
+    const tokenInDecimals: any = await tokenInContract.decimals()
+    const tokenOutDecimals: any = await tokenOutContract.decimals()
+    console.log('tokenInDecimals-route', tokenInDecimals);
+    console.log('tokenOutDecimals-route', tokenOutDecimals);
+
+    if (tokenInDecimals === undefined || tokenOutDecimals === undefined) {
+      console.log('tokenInDecimals error', tokenInDecimals);
+      console.log('tokenOutDecimals error', tokenOutDecimals);
+      return undefined
+    }
+
     // console.log('tokenInDecimals', tokenInDecimals)
     // console.log('tokenOutDecimals', tokenOutDecimals)
 
@@ -53,18 +62,18 @@ export async function generateRoute(
       tokenOutDecimals
     )
 
-    console.log(
-      'fromReadableAmount',
-      value.toString()
-      // fromReadableAmount(10, 6).toString()
-    )
+    // console.log(
+    //   'fromReadableAmount',
+    //   value.toString()
+    //   // fromReadableAmount(10, 6).toString()
+    // )
 
     const baseCurrency = type === 'exactIn' ? currencyIn : currencyOut
     const quoteCurrency = type === 'exactIn' ? currencyOut : currencyIn
     const amount = await CurrencyAmount.fromRawAmount(baseCurrency, value)
 
-    console.log('baseCurrency', baseCurrency)
-    console.log('quoteCurrency', quoteCurrency)
+    // console.log('baseCurrency', baseCurrency)
+    // console.log('quoteCurrency', quoteCurrency)
 
     const route = await router?.route(
       amount,
@@ -73,13 +82,13 @@ export async function generateRoute(
       options
     )
 
-    console.log('route', route)
-    console.log('tokenPath', route?.route[0].tokenPath)
-    console.log(
-      'route.quote.toExact()',
-      route?.quote.toExact(),
-      route?.trade.swaps[0].outputAmount.toExact()
-    )
+    // console.log('route', route)
+    // console.log('tokenPath', route?.route[0].tokenPath)
+    // console.log(
+    //   'route.quote.toExact()',
+    //   route?.quote.toExact(),
+    //   route?.trade.swaps[0].outputAmount.toExact()
+    // )
 
     // const signer = await getSigner()
     // const res = await signer?.sendTransaction({
