@@ -27,28 +27,30 @@ export default function Home() {
       console.log('_txhash', _txhash)
       if (!_txhash) return
       setTxhash(_txhash)
-      // const { txInfo, txCallData }: any =
-      await makeTx(_txhash, true)
-      // console.log('txCallData', txCallData.args)
+      const { txInfo, txCallData }: any = await makeTx(_txhash, true)
+      console.log('txCallData', txCallData.args)
 
-      // if (txInfo.chainId == 137) {
-      //   setChainId('Polygon')
-      // } else if (txInfo.chainId == 1) {
-      //   setChainId('Mainnet')
-      // } else if (txInfo.chainId == 10) {
-      //   setChainId('Optimism')
-      // } else if (txInfo.chainId == 42161) {
-      //   setChainId('Arbitrum')
-      // } else if (txInfo.chainId == 80001) {
-      //   setChainId('Mumbai')
-      // } else {
-      //   setChainId('Unknown')
-      // }
+      if (!txInfo) return
+      if (!txCallData) return
 
-      // setContractAddress(txInfo.to)
-      // setFunctionName(txCallData.name)
-      // setFunctionSignature(txCallData.signature)
-      // setData(txCallData)
+      if (txInfo.chainId == 137) {
+        setChainId('Polygon')
+      } else if (txInfo.chainId == 1) {
+        setChainId('Mainnet')
+      } else if (txInfo.chainId == 10) {
+        setChainId('Optimism')
+      } else if (txInfo.chainId == 42161) {
+        setChainId('Arbitrum')
+      } else if (txInfo.chainId == 80001) {
+        setChainId('Mumbai')
+      } else {
+        setChainId('Unknown')
+      }
+
+      setContractAddress(txInfo.to)
+      setFunctionName(txCallData.name)
+      setFunctionSignature(txCallData.signature)
+      setData(txCallData)
     } catch (error) {
       console.log('handleInput-error', error)
     }
@@ -71,6 +73,9 @@ export default function Home() {
 
       const { txInfo, txCallData }: any = await makeAaveTx(_txhash, true)
       console.log('txCallData', txCallData.args)
+
+      if (!txInfo) return
+      if (!txCallData) return
 
       if (txInfo.chainId == 137) {
         setChainId('Polygon')
