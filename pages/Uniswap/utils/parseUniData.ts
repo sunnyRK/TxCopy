@@ -1,6 +1,11 @@
 import { ethers, BigNumber, utils } from 'ethers'
 import UniversalAbi from '../../common/abis/Universal_abi.json'
-import { ADDRESS_THIS, CommandType, MSG_SENDER, swapCodes } from '../utils/constants'
+import {
+  ADDRESS_THIS,
+  CommandType,
+  MSG_SENDER,
+  swapCodes,
+} from '../utils/constants'
 import { network_name } from '../../common/constants'
 import {
   getErc20Contract,
@@ -36,7 +41,8 @@ export const checkSpenderAllowance = async (receipt: any, onlycheck: any) => {
     const DpositSigbytess = utils.toUtf8Bytes(DpositSig)
     const DpositSigbytessAfterKeccak = utils.keccak256(DpositSigbytess)
 
-    const WithdrawBytesAfterKeccak = "0x7fcf532c15f0a6db0bd6d0e038bea71d30d808c7d98cb3bf7268a95bf5081b65"
+    const WithdrawBytesAfterKeccak =
+      '0x7fcf532c15f0a6db0bd6d0e038bea71d30d808c7d98cb3bf7268a95bf5081b65'
 
     let amountIn: BigNumber = BigNumber.from('0')
     let tokenIn
@@ -51,26 +57,28 @@ export const checkSpenderAllowance = async (receipt: any, onlycheck: any) => {
           ['uint256'],
           receipt.logs[i].data
         )
-          console.log('\n')
-          amountIn = amountIn.add(value.toString())
-          tokenIn = receipt.logs[i].address.toString()
-          // console.log('tokenIn:', tokenIn.toString())
-          // console.log('amountIn:', amountIn.toString())
+        console.log('\n')
+        amountIn = amountIn.add(value.toString())
+        tokenIn = receipt.logs[i].address.toString()
+        // console.log('tokenIn:', tokenIn.toString())
+        // console.log('amountIn:', amountIn.toString())
 
-          const makeSwapData = [ADDRESS_THIS, amountIn]
-          const commandType = CommandType.WRAP_ETH
+        const makeSwapData = [ADDRESS_THIS, amountIn]
+        const commandType = CommandType.WRAP_ETH
 
-          const swapCommand = await createCommand(commandType, makeSwapData)
-          if (swapCommand) {
-            inputs.push(swapCommand.encodedInput)
-            commands = commands.concat(swapCommand.type.toString(16).padStart(2, '0'))
-          }
-          // console.log('commands:', commands.toString())
-          // console.log('inputs:', inputs.toString())
+        const swapCommand = await createCommand(commandType, makeSwapData)
+        if (swapCommand) {
+          inputs.push(swapCommand.encodedInput)
+          commands = commands.concat(
+            swapCommand.type.toString(16).padStart(2, '0')
+          )
+        }
+        // console.log('commands:', commands.toString())
+        // console.log('inputs:', inputs.toString())
 
-          depositWETH = amountIn
+        depositWETH = amountIn
       }
-  
+
       if (bytessAfterKeccak === receipt.logs[i].topics[0]) {
         const token = receipt.logs[i].address.toString()
         const from = utils.defaultAbiCoder.decode(
@@ -118,12 +126,12 @@ export const checkSpenderAllowance = async (receipt: any, onlycheck: any) => {
     const tokenInBalance = await tokenInContract?.balanceOf(address)
 
     if (tokenInBalance === undefined) {
-      throw("Balance cant fetch")
+      throw 'Balance cant fetch'
     }
 
     if (!tokenInBalance.gte(amountIn)) {
-      alert('Not enough balance you have');
-      throw("Not enough balance you have")
+      alert('Not enough balance you have')
+      throw 'Not enough balance you have'
     }
 
     const route: any = await generateRoute(
@@ -133,20 +141,23 @@ export const checkSpenderAllowance = async (receipt: any, onlycheck: any) => {
       'exactIn'
     )
     if (route === undefined) {
-      console.log('route error');
-      throw("route error")
+      console.log('route error')
+      throw 'route error'
       // return undefined
     }
     // const amountOutprice: any = route?.quote.toExact().toString()
 
-    const isPermit2Approved = await checkPermit2Approve(tokenIn, amountIn.toString())
+    const isPermit2Approved = await checkPermit2Approve(
+      tokenIn,
+      amountIn.toString()
+    )
 
     if (isPermit2Approved === undefined) {
-      console.log('isPermit2Approved error', isPermit2Approved);
-      throw("isPermit2Approved error")
+      console.log('isPermit2Approved error', isPermit2Approved)
+      throw 'isPermit2Approved error'
       // return undefined
     }
-    console.log('isPermit2Approved Done', isPermit2Approved);
+    console.log('isPermit2Approved Done', isPermit2Approved)
 
     const command = await checkSpenderSign(
       tokenIn,
@@ -156,15 +167,15 @@ export const checkSpenderAllowance = async (receipt: any, onlycheck: any) => {
 
     if (command === undefined) {
       // console.log('checkSpenderSign-command error');
-      throw("checkSpenderSign error")
+      throw 'checkSpenderSign error'
       // return undefined
     }
-    console.log('checkSpenderSign-command Done', command);
+    console.log('checkSpenderSign-command Done', command)
 
     if (command) {
       inputs.push(command.encodedInput)
       commands = commands.concat(command.type.toString(16).padStart(2, '0'))
-    } 
+    }
     // console.log('commands:', commands.toString())
     // console.log('inputs:', inputs.toString())
 
@@ -177,12 +188,12 @@ export const checkSpenderAllowance = async (receipt: any, onlycheck: any) => {
       console.log('tokenOutDecimals: ', tokenOutDecimals.toString())
 
       if (tokenInDecimals === undefined || !tokenOutDecimals === undefined) {
-        console.log('tokenInDecimals error', tokenInDecimals);
-        console.log('tokenOutDecimals error', tokenOutDecimals);
+        console.log('tokenInDecimals error', tokenInDecimals)
+        console.log('tokenOutDecimals error', tokenOutDecimals)
         // return undefined
-        throw("decimals error for tokens")
+        throw 'decimals error for tokens'
       }
-      
+
       const amountInprice: any = route?.trade.swaps[i].inputAmount.toExact()
       const amountOutprice: any = route?.trade.swaps[i].outputAmount.toExact()
       let _amountInprice = ethers.utils.parseUnits(
@@ -255,7 +266,6 @@ export const checkSpenderAllowance = async (receipt: any, onlycheck: any) => {
       }
     }
 
-
     if (isUnWrapEth) {
       const makeSwapData = [MSG_SENDER, 0]
       const commandType = CommandType.UNWRAP_WETH
@@ -263,7 +273,9 @@ export const checkSpenderAllowance = async (receipt: any, onlycheck: any) => {
       const swapCommand = await createCommand(commandType, makeSwapData)
       if (swapCommand) {
         inputs.push(swapCommand.encodedInput)
-        commands = commands.concat(swapCommand.type.toString(16).padStart(2, '0'))
+        commands = commands.concat(
+          swapCommand.type.toString(16).padStart(2, '0')
+        )
       }
       // console.log('commands-UNWRAP_WETH:', commands.toString())
       // console.log('inputs-UNWRAP_WETH:', inputs.toString())
@@ -291,7 +303,7 @@ export const checkSpenderAllowance = async (receipt: any, onlycheck: any) => {
     // console.log('parsedTx-1: ', parsedTx.args[1][1])
     // console.log('commandsSplit: ', commandsSplit)
 
-    // let decoded 
+    // let decoded
     // decoded = abiCoder.decode(
     //   ['address', 'uint256', 'uint256', 'bytes', 'bool'],
     //   parsedTx.args[1][0]
@@ -301,7 +313,6 @@ export const checkSpenderAllowance = async (receipt: any, onlycheck: any) => {
     // decoded = abiCoder.decode(['address', 'uint256'], parsedTx.args[1][0])
     // console.log('WRAP_WETH-1: ', decoded.toString())
 
-    
     // decoded = abiCoder.decode(
     //   ['address', 'uint256', 'uint256', 'bytes', 'bool'],
     //   parsedTx.args[1][0]

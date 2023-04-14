@@ -34,7 +34,7 @@ export const checkPermit2Approve = async (token: any, amount: any) => {
     console.log('allowedForPermit2: ', allowedForPermit2)
 
     if (allowedForPermit2 === undefined) {
-      throw("allownace can't fetch");
+      throw "allownace can't fetch"
     } else {
       // if not allowed then give approve
       if (!allowedForPermit2) {
@@ -71,7 +71,7 @@ export const checkSpenderSign = async (
     )
     console.log('allowedForRouter: ', allowedForRouter)
     if (allowedForRouter === undefined) {
-      throw("Permit2 allownace can't fetch");
+      throw "Permit2 allownace can't fetch"
     } else {
       let command = null
       if (!allowedForRouter) {
@@ -140,7 +140,9 @@ export const checkIsSpenderApprovedForPermit2 = async (
     const permit2 = await makeContract(Permit2Address, Permit2Abi.abi)
     if (!permit2) return
 
-    const allowance = await permit2?.connect(signer).allowance(from, token, spender)
+    const allowance = await permit2
+      ?.connect(signer)
+      .allowance(from, token, spender)
     if (allowance.amount.gte(BigNumber.from(amount.toString()))) {
       const currentDeadline = await getDeadline(120)
       if (

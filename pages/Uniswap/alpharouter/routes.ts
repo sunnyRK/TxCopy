@@ -37,12 +37,12 @@ export async function generateRoute(
 
     const tokenInDecimals: any = await tokenInContract.decimals()
     const tokenOutDecimals: any = await tokenOutContract.decimals()
-    console.log('tokenInDecimals-route', tokenInDecimals);
-    console.log('tokenOutDecimals-route', tokenOutDecimals);
+    console.log('tokenInDecimals-route', tokenInDecimals)
+    console.log('tokenOutDecimals-route', tokenOutDecimals)
 
     if (tokenInDecimals === undefined || tokenOutDecimals === undefined) {
-      console.log('tokenInDecimals error', tokenInDecimals);
-      console.log('tokenOutDecimals error', tokenOutDecimals);
+      console.log('tokenInDecimals error', tokenInDecimals)
+      console.log('tokenOutDecimals error', tokenOutDecimals)
       return undefined
     }
 

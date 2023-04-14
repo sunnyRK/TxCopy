@@ -69,11 +69,11 @@ export const makeTx = async (txHash: string, onlycheck: any) => {
     } else {
       datas = abiInterface.encodeFunctionData(decodedInput.name, [
         inputs?.commands,
-        inputs?.inputs
+        inputs?.inputs,
       ])
     }
 
-    if (!datas || datas == "0x") {
+    if (!datas || datas == '0x') {
       toast.error(`UniV3-Something went wrong.`)
       return
     }
@@ -83,7 +83,7 @@ export const makeTx = async (txHash: string, onlycheck: any) => {
       copyTx = await signer.sendTransaction({
         to: receipt.to,
         data: datas,
-        value: inputs.value
+        value: inputs.value,
       })
       toast.success(`UniV3 Tx done successfully.`)
       console.log('UnicopyTx', copyTx)
