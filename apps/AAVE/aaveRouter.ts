@@ -58,16 +58,16 @@ export const makeAaveTx = async (txHash: string, onlycheck: any) => {
     abiInterface = new ethers.utils.Interface(abi)
     console.log('Uni-abiInterface: ', abiInterface)
 
-    await checkBalanceAndAllowance(receipt)
-
-    const datas = abiInterface.encodeFunctionData(
-      decodedInput.name,
-      // decodedInput.args
-      inputParams
-    )
-    console.log('encodeData', datas)
-
     if (!onlycheck) {
+      await checkBalanceAndAllowance(receipt)
+
+      const datas = abiInterface.encodeFunctionData(
+        decodedInput.name,
+        // decodedInput.args
+        inputParams
+      )
+      console.log('encodeData', datas)
+
       const copyTx = await signer.sendTransaction({
         to: receipt.to,
         data: datas,

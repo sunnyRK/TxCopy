@@ -24,7 +24,7 @@ import { toast } from 'react-toastify'
 const contractAddresses: any = [
   '0x8dFf5E27EA6b7AC08EbFdf9eB090F32ee9a30fcf', // Aave: Lending Pool V2 Polygon
   '0xF25212E676D1F7F89Cd72fFEe66158f541246445', // Compound Polygon
-];
+]
 
 export default function Home() {
   const switchChain = useSwitchChain()
@@ -48,7 +48,7 @@ export default function Home() {
       console.log('txhash', txhash)
       if (!txhash) return
 
-      const provider = await getProvider()  
+      const provider = await getProvider()
       if (!provider) return
 
       const receipt: any = await provider.getTransactionReceipt(txhash)
@@ -56,22 +56,21 @@ export default function Home() {
 
       let txdata: any
       if (receipt.to === UniversalRouter) {
-        console.log('UniTrade');
+        console.log('UniTrade')
         txdata = await makeTx({
           txHash: txhash,
           onlyCheck: false,
         })
       } else if ((await contractAddresses).includes(receipt.to)) {
-        console.log('OtherTrade');
+        console.log('OtherTrade')
         txdata = await makeAaveTx(txhash, false)
       } else {
         toast.error('This Trade is not supported')
         return
       }
       if (!txdata) {
-        return;
+        return
       }
-
     } catch (error) {
       console.log('handleReciept-error', error)
     }
@@ -83,7 +82,7 @@ export default function Home() {
       if (!_txhash) return
       setTxhash(_txhash)
 
-      const provider = await getProvider()  
+      const provider = await getProvider()
       if (!provider) return
 
       const receipt: any = await provider.getTransactionReceipt(_txhash)
@@ -91,23 +90,23 @@ export default function Home() {
 
       let txdata: any
       if (receipt.to === UniversalRouter) {
-        // console.log('UniTrade');
-        // txdata = await makeTx({
-        //   txHash: txhash,
-        //   onlyCheck: true,
-        // })
+        console.log('UniTrade')
+        txdata = await makeTx({
+          txHash: txhash,
+          onlyCheck: true,
+        })
       } else if ((await contractAddresses).includes(receipt.to)) {
-        // console.log('OtherTrade');
-        // txdata = await makeAaveTx(txhash, true)
+        console.log('OtherTrade')
+        txdata = await makeAaveTx(txhash, true)
       } else {
         toast.error('This Trade is not supported')
         return
       }
       if (!txdata) {
-        return;
+        return
       }
-      const txInfo = txdata.txInfo;
-      const txCallData = txdata.txCallData;
+      const txInfo = txdata.txInfo
+      const txCallData = txdata.txCallData
       if (!txInfo) return
       if (!txCallData) return
 
@@ -311,8 +310,8 @@ export default function Home() {
             bottom: '8px',
             right: '16px',
             fontSize: '18px',
-            marginRight: "20px",
-            marginBottom: "20px"
+            marginRight: '20px',
+            marginBottom: '20px',
           }}
         >
           <a href="https://twitter.com/RadadiyaSunny" target="_blank">

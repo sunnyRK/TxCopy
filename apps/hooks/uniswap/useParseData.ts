@@ -6,10 +6,7 @@ import {
   MSG_SENDER,
   swapCodes,
 } from '../../Uniswap/utils/constants'
-import {
-  getErc20Contract,
-  getSigner,
-} from '../../common/helper'
+import { getErc20Contract, getSigner } from '../../common/helper'
 import {
   rearrangeSwapData,
   checkPermit2Approve,
@@ -26,10 +23,7 @@ type Props = {
 
 export function useParseData() {
   const { mutateAsync: generateRoute } = usePriceHook()
-  async function checkSpenderAllowance({
-    receipt
-    
-  }: Props): Promise<any> {
+  async function checkSpenderAllowance({ receipt }: Props): Promise<any> {
     let id: any
     let depositWETH: BigNumber = BigNumber.from(0)
     try {

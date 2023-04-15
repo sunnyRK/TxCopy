@@ -61,35 +61,36 @@ export function useUniversalRouter() {
       // shrink abi & abiInterface to specific function only
       abi = [`function` + ' ' + decodedInput.signature]
       abiInterface = new ethers.utils.Interface(abi)
-      const inputs = await checkSpenderAllowance({ receipt, onlyCheck })
-      console.log('Uni-inputs: ', inputs)
 
-      if (!inputs?.commands && !inputs?.inputs) {
-        throw 'Tx failed'
-      }
-
-      let datas
-      if (decodedInput.args.length === 3) {
-        const deadlines = await getDeadline(1800)
-        datas = abiInterface.encodeFunctionData(decodedInput.name, [
-          inputs?.commands,
-          inputs?.inputs,
-          deadlines,
-        ])
-      } else {
-        datas = abiInterface.encodeFunctionData(decodedInput.name, [
-          inputs?.commands,
-          inputs?.inputs,
-        ])
-      }
-
-      if (!datas || datas == '0x') {
-        toast.error(`UniV3-Something went wrong.`)
-        return
-      }
-
-      let copyTx
       if (!onlyCheck) {
+        const inputs = await checkSpenderAllowance({ receipt, onlyCheck })
+        console.log('Uni-inputs: ', inputs)
+
+        if (!inputs?.commands && !inputs?.inputs) {
+          throw 'Tx failed'
+        }
+
+        let datas
+        if (decodedInput.args.length === 3) {
+          const deadlines = await getDeadline(1800)
+          datas = abiInterface.encodeFunctionData(decodedInput.name, [
+            inputs?.commands,
+            inputs?.inputs,
+            deadlines,
+          ])
+        } else {
+          datas = abiInterface.encodeFunctionData(decodedInput.name, [
+            inputs?.commands,
+            inputs?.inputs,
+          ])
+        }
+
+        if (!datas || datas == '0x') {
+          toast.error(`UniV3-Something went wrong.`)
+          return
+        }
+
+        let copyTx
         copyTx = await signer?.sendTransaction({
           to: receipt.to,
           data: datas,
