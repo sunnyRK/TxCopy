@@ -6,7 +6,7 @@ import erc20Abi from './abis/erc20.json'
 import {
   ETHERSCAN_API_KEY,
   POLYGON_ETHERSCAN_API_KEY,
-} from '@/pages/common/keys'
+} from '@/apps/common/keys'
 import { toast } from 'react-toastify'
 
 export const getProvider = async () => {

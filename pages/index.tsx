@@ -8,18 +8,17 @@ import {
   Message,
 } from 'semantic-ui-react'
 import { useState } from 'react'
-import { makeAaveTx } from './AAVE/aaveRouter'
-import { useUniversalRouter } from './hooks/useUniversalRouter'
+import { makeAaveTx } from '../apps/AAVE/aaveRouter'
+import { useUniversalRouter } from '../apps/hooks/useUniversalRouter'
 import {
   useAddress,
   useNetworkMismatch,
   useNetwork,
   ConnectWallet,
-  MediaRenderer,
   useSwitchChain,
 } from '@thirdweb-dev/react'
-import { getProvider } from './common/helper'
-import { UniversalRouter } from './Uniswap/utils/constants'
+import { getProvider } from '../apps/common/helper'
+import { UniversalRouter } from '../apps/Uniswap/utils/constants'
 import { toast } from 'react-toastify'
 
 const contractAddresses: any = [
@@ -31,6 +30,7 @@ export default function Home() {
   const switchChain = useSwitchChain()
   const address = useAddress() // Detect the connected address
   const isOnWrongNetwork = useNetworkMismatch() // Detect if the user is on the wrong network
+  // @ts-ignore
   const [, switchNetwork] = useNetwork()
 
   const [txhash, setTxhash] = useState('')
@@ -91,14 +91,14 @@ export default function Home() {
 
       let txdata: any
       if (receipt.to === UniversalRouter) {
-        console.log('UniTrade');
-        txdata = await makeTx({
-          txHash: txhash,
-          onlyCheck: true,
-        })
+        // console.log('UniTrade');
+        // txdata = await makeTx({
+        //   txHash: txhash,
+        //   onlyCheck: true,
+        // })
       } else if ((await contractAddresses).includes(receipt.to)) {
-        console.log('OtherTrade');
-        txdata = await makeAaveTx(txhash, true)
+        // console.log('OtherTrade');
+        // txdata = await makeAaveTx(txhash, true)
       } else {
         toast.error('This Trade is not supported')
         return

@@ -7,7 +7,7 @@ import {
   Permit2Address,
   RouterCommand,
 } from './constants'
-import { PermitSingle } from '@/pages/Uniswap/utils/constants'
+import { PermitSingle } from '@/apps/Uniswap/utils/constants'
 import { encodePathExactInput, getPermitSignature } from './permit2'
 import { defaultAbiCoder } from 'ethers/lib/utils'
 import {
@@ -16,7 +16,7 @@ import {
   getProvider,
   getSigner,
   makeContract,
-} from '@/pages/common/helper'
+} from '@/apps/common/helper'
 import erc20Abi from '../../common/abis/erc20.json'
 
 export const checkPermit2Approve = async (token: any, amount: any) => {

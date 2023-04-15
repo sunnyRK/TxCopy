@@ -9,7 +9,7 @@ import {
   SwapType,
 } from '@uniswap/smart-order-router'
 import { TradeType, CurrencyAmount, Percent, Token } from '@uniswap/sdk-core'
-import { infura_key1 } from '@/pages/common/keys'
+import { infura_key1 } from '@/apps/common/keys'
 
 type Props = {
   tokenIn: any
