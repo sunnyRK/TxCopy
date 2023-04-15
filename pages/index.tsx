@@ -1,9 +1,38 @@
-import { Button, Input, Label, List, Message } from 'semantic-ui-react'
+import {
+  Button,
+  Header,
+  Icon,
+  Input,
+  Label,
+  List,
+  Message,
+} from 'semantic-ui-react'
 import { useState } from 'react'
-import { makeTx } from './Uniswap/UniversalRouter'
 import { makeAaveTx } from './AAVE/aaveRouter'
+import { useUniversalRouter } from './hooks/useUniversalRouter'
+import {
+  useAddress,
+  useNetworkMismatch,
+  useNetwork,
+  ConnectWallet,
+  MediaRenderer,
+  useSwitchChain,
+} from '@thirdweb-dev/react'
+import { getProvider } from './common/helper'
+import { UniversalRouter } from './Uniswap/utils/constants'
+import { toast } from 'react-toastify'
+
+const contractAddresses: any = [
+  '0x8dFf5E27EA6b7AC08EbFdf9eB090F32ee9a30fcf', // Aave: Lending Pool V2 Polygon
+  '0xF25212E676D1F7F89Cd72fFEe66158f541246445', // Compound Polygon
+];
 
 export default function Home() {
+  const switchChain = useSwitchChain()
+  const address = useAddress() // Detect the connected address
+  const isOnWrongNetwork = useNetworkMismatch() // Detect if the user is on the wrong network
+  const [, switchNetwork] = useNetwork()
+
   const [txhash, setTxhash] = useState('')
   const [data, setData] = useState()
   const [chainId, setChainId] = useState('')
@@ -12,11 +41,37 @@ export default function Home() {
   const [signature, setFunctionSignature] = useState()
   const [tx, setCopyTrade] = useState()
 
+  const { mutateAsync: makeTx } = useUniversalRouter()
+
   const handleRecieptForUniswap = async () => {
     try {
-      // const { txInfo, txCallData, copyTx }: any =
-      await makeTx(txhash, false)
-      // setCopyTrade(copyTx);
+      console.log('txhash', txhash)
+      if (!txhash) return
+
+      const provider = await getProvider()  
+      if (!provider) return
+
+      const receipt: any = await provider.getTransactionReceipt(txhash)
+      console.log('receipt', receipt)
+
+      let txdata: any
+      if (receipt.to === UniversalRouter) {
+        console.log('UniTrade');
+        txdata = await makeTx({
+          txHash: txhash,
+          onlyCheck: false,
+        })
+      } else if ((await contractAddresses).includes(receipt.to)) {
+        console.log('OtherTrade');
+        txdata = await makeAaveTx(txhash, false)
+      } else {
+        toast.error('This Trade is not supported')
+        return
+      }
+      if (!txdata) {
+        return;
+      }
+
     } catch (error) {
       console.log('handleReciept-error', error)
     }
@@ -24,12 +79,35 @@ export default function Home() {
 
   const handleInputForUniswap = async (_txhash: any) => {
     try {
-      console.log('_txhash', _txhash)
+      console.log('txhash', _txhash)
       if (!_txhash) return
       setTxhash(_txhash)
-      const { txInfo, txCallData }: any = await makeTx(_txhash, true)
-      console.log('txCallData', txCallData.args)
 
+      const provider = await getProvider()  
+      if (!provider) return
+
+      const receipt: any = await provider.getTransactionReceipt(_txhash)
+      console.log('receipt-', receipt)
+
+      let txdata: any
+      if (receipt.to === UniversalRouter) {
+        console.log('UniTrade');
+        txdata = await makeTx({
+          txHash: txhash,
+          onlyCheck: true,
+        })
+      } else if ((await contractAddresses).includes(receipt.to)) {
+        console.log('OtherTrade');
+        txdata = await makeAaveTx(txhash, true)
+      } else {
+        toast.error('This Trade is not supported')
+        return
+      }
+      if (!txdata) {
+        return;
+      }
+      const txInfo = txdata.txInfo;
+      const txCallData = txdata.txCallData;
       if (!txInfo) return
       if (!txCallData) return
 
@@ -46,7 +124,6 @@ export default function Home() {
       } else {
         setChainId('Unknown')
       }
-
       setContractAddress(txInfo.to)
       setFunctionName(txCallData.name)
       setFunctionSignature(txCallData.signature)
@@ -107,42 +184,48 @@ export default function Home() {
           margin: '100px',
         }}
       >
+        <Header as="h3" textAlign="left">
+          {isOnWrongNetwork ? (
+            <Button color="red" onClick={() => switchNetwork?.(137)}>
+              Switch Network
+            </Button>
+          ) : (
+            <ConnectWallet theme="light" btnTitle="Connect Wallet" />
+          )}
+        </Header>
         <Message>
           <Message.Header>CopyTrade For Univ3</Message.Header>
         </Message>
-        {/* <h4>
-          Uniswap:
-          0xbdb2a51f0535dcd14e555825f5378d06165fb45109b6cd6cf41e49b7b87e5dfc
-          0xad896387533d3e718922d6e584b10a9429cdf633b141841df7ac422f2271ac37
-          0xb7974cad68110635e39319523c30a10b990b37a902716636f855683597a3ded5
-        </h4> */}
         <Input
           fluid
           icon="search"
           placeholder="Paste TxHash"
           onChange={(e: any) => handleInputForUniswap(e.target.value)}
-        />
-        <div
           style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            marginTop: '20px',
+            height: '50px',
           }}
         >
-          <Button color="blue" onClick={handleRecieptForUniswap}>
+          <input />
+          <Button
+            style={{
+              marginLeft: '5px',
+              height: '50px',
+            }}
+            color="blue"
+            onClick={handleRecieptForUniswap}
+          >
             Confirm Tx
           </Button>
-        </div>
+        </Input>
 
         {tx && <a href={`{https://polygonscan.com/tx/${tx}}`}>View Tx: {tx}</a>}
 
-        <h2>PasteHash - CopyTrade</h2>
+        {/* <h2>PasteHash - CopyTrade</h2> */}
         {/* <h4>
           Compound:
           0x52819a3aca9fd842d63adcfb5cc628dc097e01e11a9e9d99370a81ea3627bdb0
         </h4> */}
-        <Input
+        {/* <Input
           fluid
           icon="search"
           placeholder="Paste TxHash"
@@ -159,7 +242,7 @@ export default function Home() {
           <Button color="green" onClick={handleRecieptForAAVE}>
             Tx Aave
           </Button>
-        </div>
+        </div> */}
 
         <Message info>
           <h2>
@@ -221,6 +304,19 @@ export default function Home() {
               })}
           </List>
         </Message>
+
+        <div
+          style={{
+            position: 'absolute',
+            bottom: '8px',
+            right: '16px',
+            fontSize: '18px',
+          }}
+        >
+          <a href="https://twitter.com/RadadiyaSunny" target="_blank">
+            <Icon name="twitter"></Icon>
+          </a>
+        </div>
 
         {/* <div style={{ marginRight: '20%', wordWrap: 'break-word' }}>
           <h2>Chain Info</h2>

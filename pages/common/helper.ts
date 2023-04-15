@@ -9,6 +9,44 @@ import {
 } from '@/pages/common/keys'
 import { toast } from 'react-toastify'
 
+export const getProvider = async () => {
+  try {
+    let provider = await new ethers.providers.Web3Provider(web3.givenProvider)
+    return provider
+  } catch (error) {
+    console.log('Erc20Contract-Error: ', error)
+  }
+}
+
+export const getSigner = async () => {
+  try {
+    let provider = await getProvider()
+    if (!provider) return
+    const signer = await provider.getSigner()
+    return signer
+  } catch (error) {
+    console.log('Erc20Contract-Error: ', error)
+  }
+}
+
+export const getDeadline = async (extra: any) => {
+  try {
+    const deadline = BigNumber.from(Math.floor(Date.now() / 1000)).add(extra)
+    return deadline.toString()
+  } catch (error) {
+    console.log('deadline-Error: ', error)
+  }
+}
+
+export const getDeadlineAfterMinus = async (extra: any) => {
+  try {
+    const deadline = BigNumber.from(Math.floor(Date.now() / 1000)).sub(extra)
+    return deadline.toString()
+  } catch (error) {
+    console.log('deadline-Error: ', error)
+  }
+}
+
 export const getAbiUsingExplorereUrl = async (
   network: string,
   toAddress: string
@@ -48,25 +86,6 @@ export const getTransactionByBlockNumberAndIndexUsingExplorereUrl = async (
   }
 }
 
-export const checkIsPermit2Approved = async (
-  token: string,
-  from: any,
-  spender: any,
-  amount: any
-) => {
-  try {
-    const tokenContract = await getErc20Contract(token)
-    if (!tokenContract) return
-    const allowance = await tokenContract.allowance(from, spender)
-    if (BigNumber.from(allowance).gte(BigNumber.from(amount.toString()))) {
-      return true
-    }
-    return false
-  } catch (error) {
-    console.log('PermitArpprove-Error: ', error)
-  }
-}
-
 export const getErc20Contract = async (tokenAddress: string) => {
   try {
     const tokenContract = await makeContract(tokenAddress, erc20Abi)
@@ -84,44 +103,6 @@ export const makeContract = async (contractAddress: string, abi: any) => {
     return contract
   } catch (error) {
     console.log('Erc20Contract-Error: ', error)
-  }
-}
-
-export const getProvider = async () => {
-  try {
-    let provider = await new ethers.providers.Web3Provider(web3.givenProvider)
-    return provider
-  } catch (error) {
-    console.log('Erc20Contract-Error: ', error)
-  }
-}
-
-export const getSigner = async () => {
-  try {
-    let provider = await getProvider()
-    if (!provider) return
-    const signer = await provider.getSigner()
-    return signer
-  } catch (error) {
-    console.log('Erc20Contract-Error: ', error)
-  }
-}
-
-export const getDeadline = async (extra: any) => {
-  try {
-    const deadline = BigNumber.from(Math.floor(Date.now() / 1000)).add(extra)
-    return deadline.toString()
-  } catch (error) {
-    console.log('deadline-Error: ', error)
-  }
-}
-
-export const getDeadlineAfterMinus = async (extra: any) => {
-  try {
-    const deadline = BigNumber.from(Math.floor(Date.now() / 1000)).sub(extra)
-    return deadline.toString()
-  } catch (error) {
-    console.log('deadline-Error: ', error)
   }
 }
 
@@ -155,6 +136,7 @@ export const checkIfContractIsProxy = async (abi: any, contratAddress: any) => {
   }
 }
 
+// For other trade not for uni trade
 export const checkBalanceAndAllowance = async (receipt: any) => {
   let id: any
   try {

@@ -6,7 +6,6 @@ export function fromReadableAmount(
   amount: number,
   decimals: number
 ): BigNumber {
-  console.log(ethers.utils.parseUnits(amount.toString(), decimals).toString())
   return ethers.utils.parseUnits(amount.toString(), decimals)
 }
 
