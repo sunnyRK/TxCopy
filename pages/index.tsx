@@ -311,10 +311,12 @@ export default function Home() {
             bottom: '8px',
             right: '16px',
             fontSize: '18px',
+            marginRight: "20px",
+            marginBottom: "20px"
           }}
         >
           <a href="https://twitter.com/RadadiyaSunny" target="_blank">
-            <Icon name="twitter"></Icon>
+            <Icon name="twitter"></Icon> sunnyrk.eth
           </a>
         </div>
 
