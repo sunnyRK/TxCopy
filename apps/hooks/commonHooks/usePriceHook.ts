@@ -45,8 +45,8 @@ export function usePriceHook() {
       const tokenOutContract = await getErc20Contract(tokenOut)
       if (!tokenInContract || !tokenOutContract) return
 
-      const tokenInDecimals: any = await tokenInContract.decimals()
-      const tokenOutDecimals: any = await tokenOutContract.decimals()
+      const tokenInDecimals: any = await tokenInContract.callStatic.decimals()
+      const tokenOutDecimals: any = await tokenOutContract.callStatic.decimals()
       if (tokenInDecimals === undefined || tokenOutDecimals === undefined) {
         throw "Decimals Can't fetch"
       }
