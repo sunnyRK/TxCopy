@@ -92,7 +92,7 @@ export default function Home() {
       if (receipt.to === UniversalRouter) {
         console.log('UniTrade')
         txdata = await makeTx({
-          txHash: txhash,
+          txHash: _txhash,
           onlyCheck: true,
         })
       } else if ((await contractAddresses).includes(receipt.to)) {
