@@ -197,7 +197,7 @@ export default function Home() {
           )}
         </Header>
         <Message>
-          <Message.Header>CopyTrade For Universal Router</Message.Header>
+          <Message.Header>CopyTrade For Univ3 Universal Router</Message.Header>
         </Message>
         <Input
           fluid
