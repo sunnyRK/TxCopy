@@ -49,10 +49,10 @@ export function usePriceHook() {
       console.log('priceHook-called-3');
 
       const tokenInDecimals: any = await tokenInContract.callStatic.decimals()
-      console.log('priceHook-called-4');
+      console.log('priceHook-called-4', tokenInDecimals);
 
       const tokenOutDecimals: any = await tokenOutContract.callStatic.decimals()
-      console.log('priceHook-called-5');
+      console.log('priceHook-called-5', tokenOutDecimals);
 
       if (tokenInDecimals === undefined || tokenOutDecimals === undefined) {
         console.log('priceHook-called-5-error');

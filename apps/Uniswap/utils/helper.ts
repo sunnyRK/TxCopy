@@ -141,7 +141,7 @@ export const checkIsSpenderApprovedForPermit2 = async (
     if (!permit2) return
 
     const allowance = await permit2
-      ?.callStatic
+      .callStatic
       .allowance(from, token, spender)
     if (allowance.amount.gte(BigNumber.from(amount.toString()))) {
       const currentDeadline = await getDeadline(120)

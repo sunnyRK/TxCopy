@@ -15,14 +15,6 @@ import {
 } from '../../Uniswap/utils/helper'
 import { toast } from 'react-toastify'
 import { usePriceHook } from '../commonHooks/usePriceHook'
-import {
-  erc20ABI,
-  useAccount,
-  useContract,
-  useContractRead,
-  useProvider,
-} from 'wagmi'
-import { useEffect, useState } from 'react'
 
 type Props = {
   receipt: any
@@ -36,7 +28,7 @@ type Props = {
 //     console.log('readbalance-provider: ', provider)
 
 //     const tokenInContract = new ethers.Contract(tokenIn, erc20ABI, provider)
-//     const tokenInBalance = await tokenInContract?.callStatic.balanceOf(_address.address)
+//     const tokenInBalance = await tokenInContract.callStatic.balanceOf(_address.address)
 //     console.log('readbalance-tokenInBalance: ', tokenInBalance)
 
 //     return tokenInBalance
@@ -46,10 +38,7 @@ type Props = {
 //  }
 
 export function useParseData() {
-  const [tokenIn, setTokenIn] = useState('')
   const { mutateAsync: generateRoute } = usePriceHook()
-  // const address = useAccount()
-  // const provider = useProvider()
 
   async function checkSpenderAllowance({ receipt, onlyCheck }: Props): Promise<any> {
     let id: any
@@ -146,12 +135,12 @@ export function useParseData() {
       }
 
       // const tokenInBalance = await readbalance(tokenIn, address, provider)
-      const tokenInBalance = await tokenInContract?.callStatic.balanceOf(address)
+      const tokenInBalance = await tokenInContract.callStatic.balanceOf(address)
       console.log('tokenInBalance:', tokenInBalance.toString())
 
-      if (tokenInBalance === undefined) {
-        throw 'Balance cant fetch'
-      }
+      // if (tokenInBalance === undefined) {
+      //   throw 'Balance cant fetch'
+      // }
 
       const route: any = await generateRoute({
         tokenIn,
@@ -168,7 +157,10 @@ export function useParseData() {
       console.log('amountOutprice',amountOutprice.toString())
 
       const tokenInDecimals = await tokenInContract.callStatic.decimals()
+      console.log('tokenInDecimals-1',tokenInDecimals.toString())
+
       const tokenOutDecimals = await tokenOutContract.callStatic.decimals()
+      console.log('tokenOutDecimals-2',tokenInDecimals.toString())
 
       console.log('tokenInDecimals: ', tokenInDecimals.toString())
       console.log('tokenOutDecimals: ', tokenOutDecimals.toString())
