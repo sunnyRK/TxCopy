@@ -287,10 +287,6 @@ export default function Home() {
               data.args.map((key: any, index: any) => {
                 return (
                   <>
-                    {/* @ts-ignore */}
-                    {/* {data?.functionFragment?.inputs[index].name} :{' '}
-                        {key.toString()} */}
-
                     <List.Item key={index}>
                       <Label color="blue" horizontal>
                         {/* @ts-ignore */}
@@ -318,34 +314,6 @@ export default function Home() {
             <Icon name="twitter"></Icon> sunnyrk.eth
           </a>
         </div>
-
-        {/* <div style={{ marginRight: '20%', wordWrap: 'break-word' }}>
-          <h2>Chain Info</h2>
-          <h3>{chainId}</h3>
-          <h2>Contract Info</h2>
-          <h3>{contractAddress}</h3>
-
-          <h2>Function Info</h2>
-          <h3>Function Name: {functionName}</h3>
-          <h3>Function Signature: {signature}</h3>
-
-          <h2>Params Info</h2> */}
-
-        {/* @ts-ignore */}
-        {/* {data?.args &&
-            // @ts-ignore
-            data.args.map((key: any, index: any) => {
-              return (
-                <div key={index}>
-                  <h5> */}
-        {/* @ts-ignore */}
-        {/* {data?.functionFragment?.inputs[index].name} :{' '}
-                    {key.toString()}
-                  </h5>
-                </div>
-              )
-            })}
-        </div> */}
       </div>
     </>
   )
