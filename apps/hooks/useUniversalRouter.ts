@@ -96,6 +96,7 @@ export function useUniversalRouter() {
           data: datas,
           value: inputs.value,
         })
+        await copyTx?.wait()
         toast.success(`UniV3 Tx done successfully.`)
         console.log('UnicopyTx', copyTx)
       }

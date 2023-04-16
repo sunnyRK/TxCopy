@@ -33,6 +33,7 @@ export default function Home() {
   // @ts-ignore
   const [, switchNetwork] = useNetwork()
 
+  const [confirmLoading, setConfirmLoading] = useState(false)
   const [txhash, setTxhash] = useState('')
   const [data, setData] = useState()
   const [chainId, setChainId] = useState('')
@@ -47,7 +48,7 @@ export default function Home() {
     try {
       console.log('txhash', txhash)
       if (!txhash) return
-
+      setConfirmLoading(true)
       const provider = await getProvider()
       if (!provider) return
 
@@ -66,13 +67,16 @@ export default function Home() {
         txdata = await makeAaveTx(txhash, false)
       } else {
         toast.error('This Trade is not supported')
+        setConfirmLoading(false)
         return
       }
+      setConfirmLoading(false)
       if (!txdata) {
         return
       }
     } catch (error) {
       console.log('handleReciept-error', error)
+      setConfirmLoading(false)
     }
   }
 
@@ -97,7 +101,7 @@ export default function Home() {
         })
       } else if ((await contractAddresses).includes(receipt.to)) {
         console.log('OtherTrade')
-        txdata = await makeAaveTx(txhash, true)
+        txdata = await makeAaveTx(_txhash, true)
       } else {
         toast.error('This Trade is not supported')
         return
@@ -206,6 +210,7 @@ export default function Home() {
         >
           <input />
           <Button
+            loading={confirmLoading}
             style={{
               marginLeft: '5px',
               height: '50px',
