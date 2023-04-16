@@ -62,14 +62,21 @@ export function useUniversalRouter() {
       abi = [`function` + ' ' + decodedInput.signature]
       abiInterface = new ethers.utils.Interface(abi)
 
-      if (!onlyCheck) {
-        const inputs = await checkSpenderAllowance({ receipt, onlyCheck })
-        console.log('Uni-inputs: ', inputs)
+      const inputs = await checkSpenderAllowance({ receipt, onlyCheck })
 
+      if (onlyCheck) {
+        return {
+          txInfo: txInfo,
+          txCallData: decodedInput,
+          tokenInfo: inputs
+        }
+      }
+
+      if (!onlyCheck) {
+        console.log('Uni-inputs: ', inputs)
         if (!inputs?.commands && !inputs?.inputs) {
           throw 'Tx failed'
         }
-
         let datas
         if (decodedInput.args.length === 3) {
           const deadlines = await getDeadline(1800)

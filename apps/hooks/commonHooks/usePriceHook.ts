@@ -26,17 +26,19 @@ export function usePriceHook() {
     type,
   }: Props): Promise<any> {
     try {
+      console.log('priceHook-called-1');
       const mainnet = `https://polygon-mainnet.infura.io/v3/${infura_key1}`
       const provider2 = new ethers.providers.JsonRpcProvider(mainnet)
       const router = new AlphaRouter({
         chainId: ChainId.POLYGON,
         provider: provider2,
       })
-      console.log('router', router)
+      console.log('routerProvide-1', router)
 
       const signer = await getSigner()
       if (!signer) return
       const address = await signer.getAddress()
+      console.log('priceHook-called-2');
 
       // const { contract, isLoading, error } = useContract(tokenIn);
       // console.log('contract', contract)
@@ -44,33 +46,45 @@ export function usePriceHook() {
       const tokenInContract = await getErc20Contract(tokenIn)
       const tokenOutContract = await getErc20Contract(tokenOut)
       if (!tokenInContract || !tokenOutContract) return
+      console.log('priceHook-called-3');
 
       const tokenInDecimals: any = await tokenInContract.callStatic.decimals()
+      console.log('priceHook-called-4');
+
       const tokenOutDecimals: any = await tokenOutContract.callStatic.decimals()
+      console.log('priceHook-called-5');
+
       if (tokenInDecimals === undefined || tokenOutDecimals === undefined) {
+        console.log('priceHook-called-5-error');
         throw "Decimals Can't fetch"
       }
+      console.log('priceHook-called-6');
 
       const options: SwapOptionsUniversalRouter = {
         recipient: address,
         slippageTolerance: new Percent(50, 10_000),
         type: SwapType.UNIVERSAL_ROUTER,
       }
+      console.log('priceHook-called-7');
 
       const currencyIn = new Token(
         137,
         tokenInContract.address,
         tokenInDecimals
       )
+      console.log('priceHook-called-8');
+
       const currencyOut = new Token(
         137,
         tokenOutContract.address,
         tokenOutDecimals
       )
+      console.log('priceHook-called-9');
 
       const baseCurrency = type === 'exactIn' ? currencyIn : currencyOut
       const quoteCurrency = type === 'exactIn' ? currencyOut : currencyIn
       const amount = await CurrencyAmount.fromRawAmount(baseCurrency, value)
+      console.log('priceHook-called-10');
 
       const route = await router?.route(
         amount,
@@ -78,6 +92,8 @@ export function usePriceHook() {
         type === 'exactIn' ? TradeType.EXACT_INPUT : TradeType.EXACT_OUTPUT,
         options
       )
+      console.log('priceHook-called-11');
+
       return route
     } catch (error) {
       console.log('route-error', error)

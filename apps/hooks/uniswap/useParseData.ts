@@ -15,15 +15,43 @@ import {
 } from '../../Uniswap/utils/helper'
 import { toast } from 'react-toastify'
 import { usePriceHook } from '../commonHooks/usePriceHook'
+import {
+  erc20ABI,
+  useAccount,
+  useContract,
+  useContractRead,
+  useProvider,
+} from 'wagmi'
+import { useEffect, useState } from 'react'
 
 type Props = {
   receipt: any
   onlyCheck: any
 }
 
+// async function readbalance(tokenIn: any, _address: any, provider: any) {
+//   try {
+//     console.log('readbalance-tokenIn: ', tokenIn)
+//     console.log('readbalance-_address: ', _address)
+//     console.log('readbalance-provider: ', provider)
+
+//     const tokenInContract = new ethers.Contract(tokenIn, erc20ABI, provider)
+//     const tokenInBalance = await tokenInContract?.callStatic.balanceOf(_address.address)
+//     console.log('readbalance-tokenInBalance: ', tokenInBalance)
+
+//     return tokenInBalance
+//   } catch (error) {
+//     console.log('readbalance-error', error);
+//   }
+//  }
+
 export function useParseData() {
+  const [tokenIn, setTokenIn] = useState('')
   const { mutateAsync: generateRoute } = usePriceHook()
-  async function checkSpenderAllowance({ receipt }: Props): Promise<any> {
+  // const address = useAccount()
+  // const provider = useProvider()
+
+  async function checkSpenderAllowance({ receipt, onlyCheck }: Props): Promise<any> {
     let id: any
     let depositWETH: BigNumber = BigNumber.from(0)
     try {
@@ -107,18 +135,22 @@ export function useParseData() {
           tokenOut = receipt.logs[i].address.toString()
         }
       }
+
+      console.log('balance-fetch')
+
       const tokenInContract = await getErc20Contract(tokenIn)
       const tokenOutContract = await getErc20Contract(tokenOut)
 
-      const tokenInBalance = await tokenInContract?.balanceOf(address)
+      if (!tokenInContract || !tokenOutContract) {
+        throw 'tokenInContract & tokenOutContract not working'
+      }
+
+      // const tokenInBalance = await readbalance(tokenIn, address, provider)
+      const tokenInBalance = await tokenInContract?.callStatic.balanceOf(address)
+      console.log('tokenInBalance:', tokenInBalance.toString())
 
       if (tokenInBalance === undefined) {
         throw 'Balance cant fetch'
-      }
-
-      if (!BigNumber.from(tokenInBalance).gte(BigNumber.from(amountIn))) {
-        alert('Not enough balance you have')
-        throw 'Not enough balance you have'
       }
 
       const route: any = await generateRoute({
@@ -127,12 +159,63 @@ export function useParseData() {
         value: amountIn.toString(),
         type: 'exactIn',
       })
+
       if (route === undefined) {
         console.log('route error')
         throw 'route error'
       }
-      // const amountOutprice: any = route?.quote.toExact().toString()
+      const amountOutprice: any = route?.quote.toExact().toString()
+      console.log('amountOutprice',amountOutprice.toString())
 
+      const tokenInDecimals = await tokenInContract.callStatic.decimals()
+      const tokenOutDecimals = await tokenOutContract.callStatic.decimals()
+
+      console.log('tokenInDecimals: ', tokenInDecimals.toString())
+      console.log('tokenOutDecimals: ', tokenOutDecimals.toString())
+
+      if (tokenInDecimals === undefined || !tokenOutDecimals === undefined) {
+        console.log('tokenInDecimals error', tokenInDecimals)
+        console.log('tokenOutDecimals error', tokenOutDecimals)
+        throw 'decimals error for tokens'
+      }
+      console.log('hello1')
+
+      let isEnoughBalance: boolean = true
+      if (!BigNumber.from(tokenInBalance.toString()).gte(BigNumber.from(amountIn))) {
+        console.log('hello2')
+        isEnoughBalance = false
+      }
+      console.log('hello3')
+
+      if (onlyCheck) {
+        console.log('hello4')
+        // const tokenInSymbol = await tokenInContract?.callStatic.symbol(address)
+        // const tokenoutSymbol = await tokenInContract?.callStatic.symbol(address)
+        let _tokenInBalance = ethers.utils.parseUnits(
+          tokenInBalance.toString(),
+          tokenInDecimals
+        )
+        // let _tokenOutBalance = ethers.utils.parseUnits(
+        //   amountOutprice,
+        //   tokenOutDecimals
+        // )
+        return {
+          // tokenInSymbol,
+          // tokenoutSymbol,
+          _tokenInBalance,
+          amountOutprice
+        }
+      }
+      console.log('hello5')
+
+      if (!isEnoughBalance) {
+        console.log('hello6')
+          alert('Not enough balance you have')
+        throw 'Not enough balance you have'
+      }
+
+      if (!onlyCheck) {
+        console.log('hello7')
       const isPermit2Approved = await checkPermit2Approve(
         tokenIn,
         amountIn.toString()
@@ -141,7 +224,6 @@ export function useParseData() {
       if (isPermit2Approved === undefined) {
         console.log('isPermit2Approved error', isPermit2Approved)
         throw 'isPermit2Approved error'
-        // return undefined
       }
       console.log('isPermit2Approved Done', isPermit2Approved)
 
@@ -154,7 +236,6 @@ export function useParseData() {
       if (command === undefined) {
         // console.log('checkSpenderSign-command error');
         throw 'checkSpenderSign error'
-        // return undefined
       }
       console.log('checkSpenderSign-command Done', command)
 
@@ -162,23 +243,8 @@ export function useParseData() {
         inputs.push(command.encodedInput)
         commands = commands.concat(command.type.toString(16).padStart(2, '0'))
       }
-      // console.log('commands:', commands.toString())
-      // console.log('inputs:', inputs.toString())
 
       for (let i = 0; i < route?.route.length; i++) {
-        // console.log('for loop index: ', i, route?.route.length)
-        const tokenInDecimals = await tokenInContract?.decimals()
-        const tokenOutDecimals = await tokenOutContract?.decimals()
-
-        console.log('tokenInDecimals: ', tokenInDecimals.toString())
-        console.log('tokenOutDecimals: ', tokenOutDecimals.toString())
-
-        if (tokenInDecimals === undefined || !tokenOutDecimals === undefined) {
-          console.log('tokenInDecimals error', tokenInDecimals)
-          console.log('tokenOutDecimals error', tokenOutDecimals)
-          // return undefined
-          throw 'decimals error for tokens'
-        }
 
         const amountInprice: any = route?.trade.swaps[i].inputAmount.toExact()
         const amountOutprice: any = route?.trade.swaps[i].outputAmount.toExact()
@@ -269,8 +335,9 @@ export function useParseData() {
 
       console.log('commands-2:', commands.toString())
       console.log('inputs-2:', inputs.toString())
-
       return { commands, inputs, value: depositWETH }
+      }
+
     } catch (error) {
       toast.update(id, {
         render: 'Approve Error',
