@@ -170,44 +170,29 @@ export function useParseData() {
         console.log('tokenOutDecimals error', tokenOutDecimals)
         throw 'decimals error for tokens'
       }
-      console.log('hello1')
 
       let isEnoughBalance: boolean = true
       if (!BigNumber.from(tokenInBalance.toString()).gte(BigNumber.from(amountIn))) {
-        console.log('hello2')
         isEnoughBalance = false
       }
-      console.log('hello3')
 
       if (onlyCheck) {
-        console.log('hello4')
-        // const tokenInSymbol = await tokenInContract?.callStatic.symbol(address)
-        // const tokenoutSymbol = await tokenInContract?.callStatic.symbol(address)
         let _tokenInBalance = ethers.utils.parseUnits(
           tokenInBalance.toString(),
           tokenInDecimals
         )
-        // let _tokenOutBalance = ethers.utils.parseUnits(
-        //   amountOutprice,
-        //   tokenOutDecimals
-        // )
         return {
-          // tokenInSymbol,
-          // tokenoutSymbol,
           _tokenInBalance,
           amountOutprice
         }
       }
-      console.log('hello5')
 
       if (!isEnoughBalance) {
-        console.log('hello6')
-          alert('Not enough balance you have')
+        alert('Not enough balance you have')
         throw 'Not enough balance you have'
       }
 
       if (!onlyCheck) {
-        console.log('hello7')
       const isPermit2Approved = await checkPermit2Approve(
         tokenIn,
         amountIn.toString()
@@ -321,8 +306,6 @@ export function useParseData() {
             swapCommand.type.toString(16).padStart(2, '0')
           )
         }
-        // console.log('commands-UNWRAP_WETH:', commands.toString())
-        // console.log('inputs-UNWRAP_WETH:', inputs.toString())
       }
 
       console.log('commands-2:', commands.toString())

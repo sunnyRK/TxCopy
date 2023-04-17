@@ -1,12 +1,4 @@
-import {
-  Button,
-  Header,
-  Icon,
-  Input,
-  Label,
-  List,
-  Message,
-} from 'semantic-ui-react'
+import { Button, Header, Icon, Input, Label, List, Message, } from 'semantic-ui-react'
 import { useState } from 'react'
 import { makeAaveTx } from '../apps/AAVE/aaveRouter'
 import { useUniversalRouter } from '../apps/hooks/useUniversalRouter'
@@ -33,6 +25,7 @@ export default function Home() {
   // @ts-ignore
   const [, switchNetwork] = useNetwork()
 
+  const [confirmDisabled, setCofirmDisabled] = useState(false)
   const [confirmLoading, setConfirmLoading] = useState(false)
   const [txhash, setTxhash] = useState('')
   const [data, setData] = useState()
@@ -41,49 +34,18 @@ export default function Home() {
   const [functionName, setFunctionName] = useState()
   const [signature, setFunctionSignature] = useState()
   const [tx, setCopyTrade] = useState()
-
   const { mutateAsync: makeTx } = useUniversalRouter()
 
-  const handleRecieptForUniswap = async () => {
+  const handleInputForUniswap = async (_txhash: any, _isInput: boolean) => {
     try {
-      console.log('txhash', txhash)
-      if (!txhash) return
-      setConfirmLoading(true)
-      const provider = await getProvider()
-      if (!provider) return
 
-      const receipt: any = await provider.getTransactionReceipt(txhash)
-      console.log('receipt', receipt)
-
-      let txdata: any
-      if (receipt.to === UniversalRouter) {
-        console.log('UniTrade')
-        txdata = await makeTx({
-          txHash: txhash,
-          onlyCheck: false,
-        })
-      } else if ((await contractAddresses).includes(receipt.to)) {
-        console.log('OtherTrade')
-        txdata = await makeAaveTx(txhash, false)
-      } else {
-        toast.error('This Trade is not supported')
-        setConfirmLoading(false)
+      if (!_txhash) {
+        console.log('txhash is invalid')
+        setCofirmDisabled(false)
         return
       }
-      setConfirmLoading(false)
-      if (!txdata) {
-        return
-      }
-    } catch (error) {
-      console.log('handleReciept-error', error)
-      setConfirmLoading(false)
-    }
-  }
-
-  const handleInputForUniswap = async (_txhash: any) => {
-    try {
-      console.log('txhash', _txhash)
-      if (!_txhash) return
+      if (!_isInput) setConfirmLoading(true)
+      else setCofirmDisabled(true)
       setTxhash(_txhash)
 
       const provider = await getProvider()
@@ -97,15 +59,22 @@ export default function Home() {
         console.log('UniTrade')
         txdata = await makeTx({
           txHash: _txhash,
-          onlyCheck: true,
+          onlyCheck: _isInput ? true : false,
         })
       } else if ((await contractAddresses).includes(receipt.to)) {
         console.log('OtherTrade')
-        txdata = await makeAaveTx(_txhash, true)
+        txdata = await makeAaveTx(
+          _txhash, 
+          _isInput ? true : false,
+        )
       } else {
         toast.error('This Trade is not supported')
+        if (!_isInput) setConfirmLoading(false)
+        else setCofirmDisabled(false)
         return
       }
+      if (!_isInput) setConfirmLoading(false)
+      else setCofirmDisabled(false)
       if (!txdata) {
         return
       }
@@ -133,50 +102,8 @@ export default function Home() {
       setData(txCallData)
     } catch (error) {
       console.log('handleInput-error', error)
-    }
-  }
-
-  const handleRecieptForAAVE = async () => {
-    try {
-      await makeAaveTx(txhash, false)
-    } catch (error) {
-      console.log('handleReciept-error', error)
-    }
-  }
-
-  const handleInputForAAVE = async (_txhash: any) => {
-    try {
-      if (!_txhash) return
-      console.log('txhash: ', _txhash)
-
-      setTxhash(_txhash)
-
-      const { txInfo, txCallData }: any = await makeAaveTx(_txhash, true)
-      console.log('txCallData', txCallData.args)
-
-      if (!txInfo) return
-      if (!txCallData) return
-
-      if (txInfo.chainId == 137) {
-        setChainId('Polygon')
-      } else if (txInfo.chainId == 1) {
-        setChainId('Mainnet')
-      } else if (txInfo.chainId == 10) {
-        setChainId('Optimism')
-      } else if (txInfo.chainId == 42161) {
-        setChainId('Arbitrum')
-      } else if (txInfo.chainId == 80001) {
-        setChainId('Mumbai')
-      } else {
-        setChainId('Unknown')
-      }
-
-      setContractAddress(txInfo.to)
-      setFunctionName(txCallData.name)
-      setFunctionSignature(txCallData.signature)
-      setData(txCallData)
-    } catch (error) {
-      console.log('handleInput-error', error)
+      if (!_isInput) setConfirmLoading(false)
+      else setCofirmDisabled(false)
     }
   }
 
@@ -203,50 +130,27 @@ export default function Home() {
           fluid
           icon="search"
           placeholder="Paste TxHash"
-          onChange={(e: any) => handleInputForUniswap(e.target.value)}
+          onChange={(e: any) => handleInputForUniswap(e.target.value, true)}
           style={{
             height: '50px',
           }}
         >
           <input />
           <Button
+            disabled={confirmDisabled}
             loading={confirmLoading}
             style={{
               marginLeft: '5px',
               height: '50px',
             }}
             color="blue"
-            onClick={handleRecieptForUniswap}
+            onClick={(e: any) => handleInputForUniswap(txhash, false)}
           >
             Confirm Tx
           </Button>
         </Input>
 
         {tx && <a href={`{https://polygonscan.com/tx/${tx}}`}>View Tx: {tx}</a>}
-
-        {/* <h2>PasteHash - CopyTrade</h2> */}
-        {/* <h4>
-          Compound:
-          0x52819a3aca9fd842d63adcfb5cc628dc097e01e11a9e9d99370a81ea3627bdb0
-        </h4> */}
-        {/* <Input
-          fluid
-          icon="search"
-          placeholder="Paste TxHash"
-          onChange={(e: any) => handleInputForAAVE(e.target.value)}
-        />
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            marginTop: '20px',
-          }}
-        >
-          <Button color="green" onClick={handleRecieptForAAVE}>
-            Tx Aave
-          </Button>
-        </div> */}
 
         <Message info>
           <h2>
