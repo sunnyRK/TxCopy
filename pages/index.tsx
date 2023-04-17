@@ -30,7 +30,7 @@ export default function Home() {
   const [txhash, setTxhash] = useState('')
   const [data, setData] = useState()
   const [chainId, setChainId] = useState('')
-  const [contractAddress, setContractAddress] = useState()
+  const [contractAddress, setContractAddress] = useState<Promise<any>>()
   const [functionName, setFunctionName] = useState()
   const [signature, setFunctionSignature] = useState()
   const [tx, setCopyTrade] = useState()
@@ -39,9 +39,18 @@ export default function Home() {
   const handleInputForUniswap = async (_txhash: any, _isInput: boolean) => {
     try {
 
+      if (_isInput) {
+        setChainId('')
+        setContractAddress(undefined)
+        setFunctionName(undefined)
+        setFunctionSignature(undefined)
+        setData(undefined)
+      }
+
       if (!_txhash) {
         console.log('txhash is invalid')
         setCofirmDisabled(false)
+
         return
       }
       if (!_isInput) setConfirmLoading(true)

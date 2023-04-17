@@ -6,7 +6,7 @@ import {
   MSG_SENDER,
   swapCodes,
 } from '../../Uniswap/utils/constants'
-import { getErc20Contract, getSigner } from '../../common/helper'
+import { getErc20Contract, getProvider, getSigner } from '../../common/helper'
 import {
   rearrangeSwapData,
   checkPermit2Approve,
@@ -15,30 +15,91 @@ import {
 } from '../../Uniswap/utils/helper'
 import { toast } from 'react-toastify'
 import { usePriceHook } from '../commonHooks/usePriceHook'
+import { useContract, useContractRead } from "@thirdweb-dev/react";
+import React, { useMemo } from 'react'
+import useBalanceOf from './useBalanceOf'
+import useDecimals from './useDecimals'
+// import { createMulticall, ListenerOptions } from '@uniswap/redux-multicall'
+// import { abi as MulticallABI } from '@uniswap/v3-periphery/artifacts/contracts/lens/UniswapInterfaceMulticall.sol/UniswapInterfaceMulticall.json'
+// import { Contract } from '@ethersproject/contracts'
+// import { UniswapInterfaceMulticall } from './types'
+// import { useMultiChainMultiContractSingleData } from './multicall'
+// import { DAI_ADDRESS, USDC_ADDRESS, USDT_ADDRESS } from '../multicall/consts'
+// // const multicall = createMulticall()
+// import ERC20_ABI from '../../common/abis/erc20_2.json'
+// import { Interface } from 'ethers/lib/utils'
+// import web3 from 'web3'
 
 type Props = {
   receipt: any
   onlyCheck: any
 }
 
-// async function readbalance(tokenIn: any, _address: any, provider: any) {
-//   try {
-//     console.log('readbalance-tokenIn: ', tokenIn)
-//     console.log('readbalance-_address: ', _address)
-//     console.log('readbalance-provider: ', provider)
+// function useCallContext() {
+//   const { chainId } = useWeb3React()
+//   const latestBlock = useBlockNumber()
+//   return { chainId, latestBlock }
+// }
 
-//     const tokenInContract = new ethers.Contract(tokenIn, erc20ABI, provider)
-//     const tokenInBalance = await tokenInContract.callStatic.balanceOf(_address.address)
-//     console.log('readbalance-tokenInBalance: ', tokenInBalance)
 
-//     return tokenInBalance
-//   } catch (error) {
-//     console.log('readbalance-error', error);
+// export function useSingleCallResult(args: any) {
+//   // const { chainId, latestBlock } = useCallContext()
+//   return multicall.hooks.useSingleCallResult(137, 1, args)
+// }
+
+// export function useMaxTokenBalance(chainId: any, blockNumber: any): string | undefined {
+//   const ERC20Interface: any = new Interface(ERC20_ABI)
+//   const { contracts, accounts }:any = useMemo(
+//     () => ({
+//       // The first element is intentionally empty to test sparse arrays; see https://github.com/Uniswap/redux-multicall/pull/21.
+//       // eslint-disable-next-line no-sparse-arrays
+//       contracts: [, USDC_ADDRESS, USDT_ADDRESS, DAI_ADDRESS],
+//       accounts: ["0xb50685c25485CA8C520F5286Bbbf1d3F216D6989"],
+//     }),
+//     []
+//   )
+//   const methodName: any = 'balanceOf'
+//   // provider.getBlockNumber( )
+//   const results: any = useMultiChainMultiContractSingleData(chainId, blockNumber, contracts, ERC20Interface, methodName, accounts)
+//   let max
+//   for (const result of results) {
+//     if (!result.valid || !result.result?.length) continue
+//     const value = BigNumber.from(result.result[0])
+//     if (!max || value.gt(max)) max = value
 //   }
-//  }
+//   return max?.toString()
+// }
+
+// export function useContract(chainId: any) {
+//   return useMemo(async () => {
+//     return new ethers.Contract("0x1F98415757620B543A52E61c46B32eB19261F984", MulticallABI, new ethers.providers.Web3Provider(web3.givenProvider)) as UniswapInterfaceMulticall
+//   }, [chainId])
+// }
+
+// export function useMemoBalanceof() {
+//   const name = useMemo((token: any, address: any) => {
+//     return await token.callStatic.balanceOf(address)
+//   }, [token])
+//   return {name}
+// }
+
+const promisify = (inner: any) =>
+    new Promise((resolve, reject) =>
+        inner((err: any, res: any) => {
+            if (err) {
+                reject(err)
+            } else {
+                resolve(res);
+            }
+        })
+    );
 
 export function useParseData() {
+  const { balance, getBalanceOf } = useBalanceOf();
+  const { decimals, getDecimals } = useDecimals();
   const { mutateAsync: generateRoute } = usePriceHook()
+  // const {name} = useMemoBalanceof()
+  // const { contract, isLoading, error } = useContract("{{contract_address}}");
 
   async function checkSpenderAllowance({ receipt, onlyCheck }: Props): Promise<any> {
     let id: any
@@ -46,9 +107,9 @@ export function useParseData() {
     try {
       let commands = '0x'
       let inputs: any = []
-
+      let provider = await getProvider()
       let signer = await getSigner()
-      if (!signer) return
+      if (!signer || !provider) return
       let address = await signer.getAddress()
 
       const sig = 'Transfer(address,address,uint256)'
@@ -125,7 +186,12 @@ export function useParseData() {
         }
       }
 
-      console.log('balance-fetch')
+      console.log('Fetching..')
+      console.log('tokenIn..', tokenIn)
+      console.log('tokenOut..', tokenOut)
+      console.log('address..', address)
+
+      // const { contract, isLoading, error } = useContract("{{contract_address}}");
 
       const tokenInContract = await getErc20Contract(tokenIn)
       const tokenOutContract = await getErc20Contract(tokenOut)
@@ -134,13 +200,31 @@ export function useParseData() {
         throw 'tokenInContract & tokenOutContract not working'
       }
 
-      // const tokenInBalance = await readbalance(tokenIn, address, provider)
-      const tokenInBalance = await tokenInContract.callStatic.balanceOf(address)
+      await getBalanceOf(tokenInContract, address)
+      const tokenInBalance: any = balance.current
+      // const tokenInBalance = await tokenInContract.callStatic.balanceOf(address)
       console.log('tokenInBalance:', tokenInBalance.toString())
+      console.log('balance.current:', balance.current?.toString())
 
-      // if (tokenInBalance === undefined) {
-      //   throw 'Balance cant fetch'
-      // }
+      await getDecimals(tokenInContract)
+      const tokenInDecimals: any = decimals.current
+      // const tokenOutDecimals = await tokenInContract.callStatic.decimals()
+      console.log('tokenInDecimals-1',tokenInDecimals.toString())
+
+      await getDecimals(tokenOutContract)
+      const tokenOutDecimals: any = decimals.current
+      // const tokenOutDecimals = await tokenOutContract.callStatic.decimals()
+      console.log('tokenOutDecimals-2',tokenInDecimals.toString())
+
+      if (tokenInDecimals === undefined || !tokenOutDecimals === undefined) {
+        console.log('tokenInDecimals error', tokenInDecimals)
+        console.log('tokenOutDecimals error', tokenOutDecimals)
+        throw 'decimals error for tokens'
+      }
+
+      if (tokenInBalance === undefined) {
+        throw 'Balance cant fetch'
+      }
 
       const route: any = await generateRoute({
         tokenIn,
@@ -155,21 +239,6 @@ export function useParseData() {
       }
       const amountOutprice: any = route?.quote.toExact().toString()
       console.log('amountOutprice',amountOutprice.toString())
-
-      const tokenInDecimals = await tokenInContract.callStatic.decimals()
-      console.log('tokenInDecimals-1',tokenInDecimals.toString())
-
-      const tokenOutDecimals = await tokenOutContract.callStatic.decimals()
-      console.log('tokenOutDecimals-2',tokenInDecimals.toString())
-
-      console.log('tokenInDecimals: ', tokenInDecimals.toString())
-      console.log('tokenOutDecimals: ', tokenOutDecimals.toString())
-
-      if (tokenInDecimals === undefined || !tokenOutDecimals === undefined) {
-        console.log('tokenInDecimals error', tokenInDecimals)
-        console.log('tokenOutDecimals error', tokenOutDecimals)
-        throw 'decimals error for tokens'
-      }
 
       let isEnoughBalance: boolean = true
       if (!BigNumber.from(tokenInBalance.toString()).gte(BigNumber.from(amountIn))) {
@@ -199,10 +268,8 @@ export function useParseData() {
       )
 
       if (isPermit2Approved === undefined) {
-        console.log('isPermit2Approved error', isPermit2Approved)
         throw 'isPermit2Approved error'
       }
-      console.log('isPermit2Approved Done', isPermit2Approved)
 
       const command = await checkSpenderSign(
         tokenIn,
@@ -211,10 +278,8 @@ export function useParseData() {
       )
 
       if (command === undefined) {
-        // console.log('checkSpenderSign-command error');
         throw 'checkSpenderSign error'
       }
-      console.log('checkSpenderSign-command Done', command)
 
       if (command) {
         inputs.push(command.encodedInput)
@@ -247,20 +312,11 @@ export function useParseData() {
           fees.push(route.trade.routes[i].pools[j].fee)
         }
 
-        // console.log('tokenInDecimals: ', tokenInDecimals.toString())
-        // console.log('tokenOutDecimals: ', tokenOutDecimals.toString())
-
         console.log(
           '_amountInprice: ',
           amountInprice.toString(),
           _amountInprice.toString()
         )
-        // console.log(
-        //   '_amountOutprice: ',
-        //   amountOutprice.toString(),
-        //   _amountOutprice.toString()
-        // )
-        // console.log('totalFees+', totalFees.toString())
 
         _amountOutprice = _amountOutprice.sub(
           _amountOutprice.mul(totalFees).div(1e6)

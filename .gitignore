@@ -3,6 +3,7 @@
 .env
 backup
 pages_backup
+apps/hooks/multicall
 
 # dependencies
 /node_modules

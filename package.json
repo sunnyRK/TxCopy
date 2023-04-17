@@ -33,6 +33,7 @@
     "@types/node": "18.11.17",
     "@types/react": "18.0.26",
     "@types/react-dom": "18.0.9",
+    "@uniswap/redux-multicall": "^1.1.8",
     "@uniswap/sdk-core": "^3.2.2",
     "@uniswap/smart-order-router": "^3.10.1",
     "@uniswap/v3-sdk": "^3.9.0",
@@ -78,8 +79,11 @@
     "@nomiclabs/hardhat-ethers": "^2.2.2",
     "@openzeppelin/hardhat-upgrades": "^1.22.1",
     "@openzeppelin/upgrades-core": "^1.24.1",
+    "@reduxjs/toolkit": "^1.9.4",
     "@types/lodash": "^4.14.191",
     "@types/node-fetch": "^2.6.2",
-    "@types/omit-deep": "^0.3.0"
+    "@types/omit-deep": "^0.3.0",
+    "@uniswap/v3-periphery": "^1.4.3",
+    "react-redux": "^8.0.5"
   }
 }
