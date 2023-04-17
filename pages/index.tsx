@@ -30,7 +30,7 @@ export default function Home() {
   const [txhash, setTxhash] = useState('')
   const [data, setData] = useState()
   const [chainId, setChainId] = useState('')
-  const [contractAddress, setContractAddress] = useState<Promise<any>>()
+  const [contractAddress, setContractAddress] = useState()
   const [functionName, setFunctionName] = useState()
   const [signature, setFunctionSignature] = useState()
   const [tx, setCopyTrade] = useState()
