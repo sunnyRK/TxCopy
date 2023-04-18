@@ -1,0 +1,10 @@
+{
+  "WETH": "https://cryptologos.cc/logos/thumbs/ethereum.png?v=023",
+  "WMATIC": "https://cryptologos.cc/logos/thumbs/polygon.png?v=023",
+  "ETH": "https://cryptologos.cc/logos/thumbs/ethereum.png?v=023",
+  "MATIC": "https://cryptologos.cc/logos/thumbs/polygon.png?v=023",
+  "DAI": "https://cryptologos.cc/logos/thumbs/multi-collateral-dai.png?v=023",
+  "AVE": "https://cryptologos.cc/logos/thumbs/aave.png?v=023",
+  "COMP": "https://cryptologos.cc/logos/thumbs/compound.png?v=023",
+  "UNI": "https://cryptologos.cc/logos/thumbs/uniswap.png?v=023"
+}
