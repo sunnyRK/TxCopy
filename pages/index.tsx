@@ -17,7 +17,7 @@ export default function Home() {
           </h1>
         </div>
 
-        <div className="flex-col md:flex-row flex gap-4">
+        <div className="flex-col md:flex-row flex gap-4 items-start">
           <div className="w-full md:w-[40%] bg-[#ffffff10] p-6 rounded-lg">
             <CopyTrade setIsLoading={setIsLoading} />
           </div>
