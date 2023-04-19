@@ -111,9 +111,7 @@ export const checkIsPermit2Approved = async (
     console.log('tokenContract: ', tokenContract)
     console.log('from: ', spender)
     console.log('spender: ', spender)
-    const allowance = await tokenContract
-      .callStatic
-      .allowance(from, spender)
+    const allowance = await tokenContract.callStatic.allowance(from, spender)
     console.log('allowance: ', allowance)
 
     if (BigNumber.from(allowance).gte(BigNumber.from(amount.toString()))) {
@@ -140,9 +138,7 @@ export const checkIsSpenderApprovedForPermit2 = async (
     const permit2 = await makeContract(Permit2Address, Permit2Abi.abi)
     if (!permit2) return
 
-    const allowance = await permit2
-      .callStatic
-      .allowance(from, token, spender)
+    const allowance = await permit2.callStatic.allowance(from, token, spender)
     if (allowance.amount.gte(BigNumber.from(amount.toString()))) {
       const currentDeadline = await getDeadline(120)
       if (

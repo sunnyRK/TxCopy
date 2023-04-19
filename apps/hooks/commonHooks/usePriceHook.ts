@@ -16,6 +16,8 @@ type Props = {
   tokenOut: any
   value: any
   type: any
+  decimalIn: any
+  decimalOut: any
 }
 
 export function usePriceHook() {
@@ -24,6 +26,8 @@ export function usePriceHook() {
     tokenOut,
     value,
     type,
+    decimalIn,
+    decimalOut,
   }: Props): Promise<any> {
     try {
       const mainnet = `https://polygon-mainnet.infura.io/v3/${infura_key1}`
@@ -38,20 +42,20 @@ export function usePriceHook() {
       if (!signer) return
       const address = await signer.getAddress()
 
-      const tokenInContract = await getErc20Contract(tokenIn)
-      const tokenOutContract = await getErc20Contract(tokenOut)
-      if (!tokenInContract || !tokenOutContract) return
+      // const tokenInContract = await getErc20Contract(tokenIn)
+      // const tokenOutContract = await getErc20Contract(tokenOut)
+      // if (!tokenInContract || !tokenOutContract) return
 
-      const tokenInDecimals: any = await tokenInContract.callStatic.decimals()
-      console.log('router-decimal-1', tokenInDecimals);
+      // const tokenInDecimals: any = await tokenInContract.callStatic.decimals()
+      // console.log('router-decimal-1', tokenInDecimals);
 
-      const tokenOutDecimals: any = await tokenOutContract.callStatic.decimals()
-      console.log('router-decimal-2', tokenOutDecimals);
+      // const tokenOutDecimals: any = await tokenOutContract.callStatic.decimals()
+      // console.log('router-decimal-2', tokenOutDecimals);
 
-      if (tokenInDecimals === undefined || tokenOutDecimals === undefined) {
-        console.log('router-decimal-error');
-        throw "Decimals Can't fetch"
-      }
+      // if (tokenInDecimals === undefined || tokenOutDecimals === undefined) {
+      //   console.log('router-decimal-error');
+      //   throw "Decimals Can't fetch"
+      // }
 
       const options: SwapOptionsUniversalRouter = {
         recipient: address,
@@ -59,16 +63,8 @@ export function usePriceHook() {
         type: SwapType.UNIVERSAL_ROUTER,
       }
 
-      const currencyIn = new Token(
-        137,
-        tokenInContract.address,
-        tokenInDecimals
-      )
-      const currencyOut = new Token(
-        137,
-        tokenOutContract.address,
-        tokenOutDecimals
-      )
+      const currencyIn = new Token(137, tokenIn, decimalIn)
+      const currencyOut = new Token(137, tokenOut, decimalOut)
 
       const baseCurrency = type === 'exactIn' ? currencyIn : currencyOut
       const quoteCurrency = type === 'exactIn' ? currencyOut : currencyIn

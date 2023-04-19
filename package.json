@@ -68,7 +68,7 @@
     "uuidv4": "^6.2.13",
     "wagmi": "^0.12.10",
     "web3": "^1.8.2",
-    "zustand": "^4.3.6"
+    "zustand": "^4.3.7"
   },
   "devDependencies": {
     "@graphql-codegen/cli": "^2.16.1",

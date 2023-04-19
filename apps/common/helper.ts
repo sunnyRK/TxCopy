@@ -186,7 +186,10 @@ export const checkBalanceAndAllowance = async (receipt: any) => {
           const contract = await getErc20Contract(contractAddress)
           if (!contract) return
 
-          const allowance = await contract.callStatic.allowance(receipt.from, receipt.to)
+          const allowance = await contract.callStatic.allowance(
+            receipt.from,
+            receipt.to
+          )
           console.log('allowance', allowance.toString())
 
           const tokenBalance = await contract.callStatic.balanceOf(receipt.from)

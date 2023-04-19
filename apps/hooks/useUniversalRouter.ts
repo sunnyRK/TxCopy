@@ -15,11 +15,26 @@ import { useParseData } from './uniswap/useParseData'
 type Props = {
   txHash: string
   onlyCheck: boolean
+  setTokenIn: any
+  setTokenOut: any
+  setAmountIn: any
+  setIsWrapEth: any
+  setIsUnWrapEth: any
+  setPermitContract: any
 }
 
 export function useUniversalRouter() {
   const { mutateAsync: checkSpenderAllowance } = useParseData()
-  async function makeTx({ txHash, onlyCheck }: Props): Promise<any> {
+  async function makeTx({
+    txHash,
+    onlyCheck,
+    setTokenIn,
+    setTokenOut,
+    setAmountIn,
+    setIsWrapEth,
+    setIsUnWrapEth,
+    setPermitContract
+  }: Props): Promise<any> {
     try {
       const provider = await getProvider()
       const signer = await getSigner()
@@ -62,13 +77,22 @@ export function useUniversalRouter() {
       abi = [`function` + ' ' + decodedInput.signature]
       abiInterface = new ethers.utils.Interface(abi)
 
-      const inputs = await checkSpenderAllowance({ receipt, onlyCheck })
+      const inputs = await checkSpenderAllowance({
+        receipt,
+        onlyCheck,
+        setTokenIn,
+        setTokenOut,
+        setAmountIn,
+        setIsWrapEth,
+        setIsUnWrapEth,
+        setPermitContract
+      })
 
       if (onlyCheck) {
         return {
           txInfo: txInfo,
           txCallData: decodedInput,
-          tokenInfo: inputs
+          tokenInfo: inputs,
         }
       }
 

@@ -122,7 +122,11 @@ export async function getPermitSignature(
   // look up the correct nonce for this permit
   const address = await signer.getAddress()
   const nextNonce = (
-    await permit2?.callStatic.allowance(address, permit.details.token, permit.spender)
+    await permit2?.callStatic.allowance(
+      address,
+      permit.details.token,
+      permit.spender
+    )
   ).nonce
   permit.details.nonce = nextNonce
   return await signPermit(permit, signer, permit2.address)
