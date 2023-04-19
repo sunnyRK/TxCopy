@@ -24,7 +24,7 @@
     "@lens-protocol/react": "^0.1.1",
     "@metamask/jazzicon": "^2.0.0",
     "@next/font": "13.0.7",
-    "@tanstack/react-query": "^4.20.4",
+    "@tanstack/react-query": "^4.29.3",
     "@thirdweb-dev/react": "^3.11.7",
     "@thirdweb-dev/sdk": "^3.10.10",
     "@thirdweb-dev/storage": "^1.0.6",

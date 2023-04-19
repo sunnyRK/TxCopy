@@ -1,5 +1,8 @@
+import { useQueryHook } from '@/apps/hooks/commonQueryHook/useQueryHook'
+import { mempool } from '@/apps/Uniswap/utils/helper'
 import icons from '@/utils/icons.json'
 import Image from 'next/image'
+import { useEffect } from 'react'
 
 const txns = [
   {
@@ -152,6 +155,19 @@ const TransactionItem = ({
   blockNumber,
   to,
 }: any) => {
+
+  // useEffect(() => {
+  //   mempool()
+  // }, [])
+
+  const {
+    isLoading,
+    isError,
+    data: useQueryData,
+    error,
+  } = useQueryHook();
+  console.log("useQueryData: ", useQueryData);
+
   return (
     <div className="w-full  bg-[#ffffff]/5 px-4 py-6 rounded-xl my-2 ">
       <div className="flex justify-between">

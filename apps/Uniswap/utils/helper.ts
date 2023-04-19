@@ -299,3 +299,23 @@ export function createCommand(
   const encodedInput = defaultAbiCoder.encode(ABI_DEFINITION[type], parameters)
   return { type, encodedInput }
 }
+
+export const mempool = async () => {
+  console.log('Hi');
+  const provider = new ethers.providers.WebSocketProvider(
+    `wss://polygon-mainnet.infura.io/ws/v3/${process.env.NEXT_PUBLIC_PROJECT_ID_mempool_3}`
+  )
+  console.log('calling websocket')
+  provider.on('completed', async (tx) => {
+    try {
+      const txInfo = await provider.getTransaction(tx)
+      if (txInfo?.to == '0x4C60051384bd2d3C01bfc845Cf5F4b44bcbE9de5') {
+        console.log(txInfo)
+        // await getNewEvent(txInfo?.hash)
+      }
+    } catch (error) {
+      console.log('no data to show', error)
+    }
+  })
+}
+
