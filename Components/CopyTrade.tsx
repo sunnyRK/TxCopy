@@ -5,24 +5,29 @@ import { getProvider } from '@/apps/common/helper'
 import { UniversalRouter } from '@/apps/Uniswap/utils/constants'
 import { makeAaveTx } from '@/apps/AAVE/aaveRouter'
 import { toast } from 'react-toastify'
+import { Tooltip } from '@nextui-org/react'
 
 const DataItem = ({ label, value, short }: any) => {
   return (
     <div className="flex justify-between bg-black p-2 px-4 rounded-lg">
       <p>{label}</p>
-      <p className="text-[#8a46ff]">{!short ? value : short}</p>
+      <Tooltip content={value} rounded color="invert">
+        <p className="text-[#8a46ff]">{!short ? value : short}</p>
+      </Tooltip>
     </div>
   )
 }
 
 interface Props {
   setIsLoading: Dispatch<SetStateAction<boolean>>
+  setTxhash: Dispatch<SetStateAction<string>>
+  txhash: string
 }
 
-const CopyTrade: FC<Props> = ({ setIsLoading }) => {
+const CopyTrade: FC<Props> = ({ setIsLoading, txhash, setTxhash }) => {
   const [confirmDisabled, setCofirmDisabled] = useState(false)
   const [confirmLoading, setConfirmLoading] = useState(false)
-  const [txhash, setTxhash] = useState('')
+
   const [data, setData] = useState()
   const [chainId, setChainId] = useState('')
   const [contractAddress, setContractAddress] = useState<any>()
@@ -114,7 +119,6 @@ const CopyTrade: FC<Props> = ({ setIsLoading }) => {
   const handlePaste = async () => {
     const text = await navigator.clipboard.readText()
     handleInputForUniswap(text, true)
-    setTxhash(text)
   }
 
   return (
@@ -126,11 +130,14 @@ const CopyTrade: FC<Props> = ({ setIsLoading }) => {
           className="w-[90%] outline-none rounded-l-lg px-4 py-2 text-black"
           onChange={(e: any) => handleInputForUniswap(e.target.value, true)}
         />
+
         <button
-          className="w-[10%] rounded-r-lg bg-white border-l border-gray-200 text-[#8a46ff] text-3xl font-bold"
+          className="w-[10%] rounded-r-lg bg-white border-l border-gray-200 text-[#8a46ff] text-3xl font-bold flex justify-center"
           onClick={handlePaste}
         >
-          &#x2398;
+          <Tooltip content="Paste Clipboard" rounded color="invert">
+            &#x2398;
+          </Tooltip>
         </button>
       </div>
       {tx && <a href={`{https://polygonscan.com/tx/${tx}}`}>View Tx: {tx}</a>}
@@ -190,13 +197,23 @@ const CopyTrade: FC<Props> = ({ setIsLoading }) => {
         </div>
 
         <div className="button__container">
-          <button
-            disabled={confirmDisabled}
-            className="bg-[#8a46ff] py-2  w-full text-center rounded-lg  mt-4"
-            onClick={(e: any) => handleInputForUniswap(txhash, false)}
-          >
-            Confirm
-          </button>
+          {contractAddress ? (
+            <button
+              disabled={confirmDisabled}
+              className="bg-[#8a46ff] py-2  w-full text-center rounded-lg  mt-4"
+              onClick={(e: any) => handleInputForUniswap(txhash, false)}
+            >
+              Confirm
+            </button>
+          ) : (
+            <button
+              disabled={confirmDisabled}
+              className="bg-[#8a46ff] py-2  w-full text-center rounded-lg  mt-4"
+              onClick={(e: any) => handleInputForUniswap(txhash, false)}
+            >
+              Get Details
+            </button>
+          )}
         </div>
       </div>
     </>

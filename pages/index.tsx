@@ -7,6 +7,7 @@ import Transaction from '@/Components/Transactions'
 
 export default function Home() {
   const [isLoading, setIsLoading] = useState<boolean>(false)
+  const [txhash, setTxhash] = useState<string>('')
   return (
     <>
       <Header />
@@ -19,7 +20,11 @@ export default function Home() {
 
         <div className="flex-col md:flex-row flex gap-4 items-start">
           <div className="w-full md:w-[40%] bg-[#ffffff10] p-6 rounded-lg">
-            <CopyTrade setIsLoading={setIsLoading} />
+            <CopyTrade
+              setIsLoading={setIsLoading}
+              txhash={txhash}
+              setTxhash={setTxhash}
+            />
           </div>
           <div className="w-full md:w-[60%] bg-[#ffffff10] p-6 rounded-lg">
             <Transaction />

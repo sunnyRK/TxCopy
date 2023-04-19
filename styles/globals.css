@@ -4,6 +4,22 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --toastify-toast-background: #0a090d;
+  --toastify-text-color-light: #fff;
+  --toastify-text-color-dark: #fff;
+}
+
+.Toastify__toast {
+  color: #fff;
+  background: #0a090d !important;
+}
+
+.Toastify__toast::after,
+.Toastify__toast::before {
+  color: #fff;
+}
+
 body {
   background-color: #0a090d;
   color: #fff;

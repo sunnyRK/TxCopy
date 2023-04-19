@@ -1,125 +1,9 @@
 import { useQueryHook } from '@/apps/hooks/commonQueryHook/useQueryHook'
 import { mempool } from '@/apps/Uniswap/utils/helper'
+import { Tooltip } from '@nextui-org/react'
 import icons from '@/utils/icons.json'
 import Image from 'next/image'
-import { useEffect } from 'react'
-
-const txns = [
-  {
-    id: '0x00ed4625a5763118f20a9c21085dea14f5965f6a8682a524ac40ddb2fbce10ac-391',
-    from: '0xb50685c25485ca8c520f5286bbbf1d3f216d6989',
-    hash: '0x00ed4625a5763118f20a9c21085dea14f5965f6a8682a524ac40ddb2fbce10ac',
-    to: '0x4c60051384bd2d3c01bfc845cf5f4b44bcbe9de5',
-    timestamp: '1681119302',
-    amountIn: '60000000000000',
-    amountOut: '101592756625387405',
-    logIndex: 395,
-    blockNumber: 16811193,
-    tokenIn: {
-      name: 'Wrapped Ether',
-      symbol: 'WETH',
-    },
-    tokenOut: {
-      name: 'Wrapped Matic',
-      symbol: 'WMATIC',
-    },
-  },
-  {
-    id: '0x00ed4625a5763118f20a9c21085dea14f5965f6a8682a524ac40ddb2fbce10ac-395',
-    from: '0xb50685c25485ca8c520f5286bbbf1d3f216d6989',
-    hash: '0x00ed4625a5763118f20a9c21085dea14f5965f6a8682a524ac40ddb2fbce10ac',
-    to: '0x4c60051384bd2d3c01bfc845cf5f4b44bcbe9de5',
-    timestamp: '1681119302',
-    amountIn: '60000000000000',
-    amountOut: '101592756625387405',
-    logIndex: 395,
-    blockNumber: 16811193,
-    tokenIn: {
-      name: 'Wrapped Ether',
-      symbol: 'WETH',
-    },
-    tokenOut: {
-      name: 'Wrapped Matic',
-      symbol: 'WMATIC',
-    },
-  },
-  {
-    id: '0x00ed4625a5763118f20a9c21085dea14f5965f6a8682a524ac40ddb2fbce10ac-315',
-    from: '0xb50685c25485ca8c520f5286bbbf1d3f216d6989',
-    hash: '0x00ed4625a5763118f20a9c21085dea14f5965f6a8682a524ac40ddb2fbce10ac',
-    to: '0x4c60051384bd2d3c01bfc845cf5f4b44bcbe9de5',
-    timestamp: '1681119302',
-    amountIn: '60000000000000',
-    amountOut: '101592756625387405',
-    logIndex: 395,
-    blockNumber: 16811193,
-    tokenIn: {
-      name: 'Wrapped Ether',
-      symbol: 'WETH',
-    },
-    tokenOut: {
-      name: 'Wrapped Matic',
-      symbol: 'WMATIC',
-    },
-  },
-  {
-    id: '0x00ed4625a5763118f20a9c21085dea14f5965f6a8682a524ac40ddb2fbce10ac-325',
-    from: '0xb50685c25485ca8c520f5286bbbf1d3f216d6989',
-    hash: '0x00ed4625a5763118f20a9c21085dea14f5965f6a8682a524ac40ddb2fbce10ac',
-    to: '0x4c60051384bd2d3c01bfc845cf5f4b44bcbe9de5',
-    timestamp: '1681119302',
-    amountIn: '60000000000000',
-    amountOut: '101592756625387405',
-    logIndex: 395,
-    blockNumber: 16811193,
-    tokenIn: {
-      name: 'Wrapped Ether',
-      symbol: 'WETH',
-    },
-    tokenOut: {
-      name: 'Wrapped Matic',
-      symbol: 'WMATIC',
-    },
-  },
-  {
-    id: '0x00ed4625a5763118f20a9c21085dea14f5965f6a8682a524ac40ddb2fbce10ac-390',
-    from: '0xb50685c25485ca8c520f5286bbbf1d3f216d6989',
-    hash: '0x00ed4625a5763118f20a9c21085dea14f5965f6a8682a524ac40ddb2fbce10ac',
-    to: '0x4c60051384bd2d3c01bfc845cf5f4b44bcbe9de5',
-    timestamp: '1681119302',
-    amountIn: '60000000000000',
-    amountOut: '101592756625387405',
-    logIndex: 395,
-    blockNumber: 16811193,
-    tokenIn: {
-      name: 'Wrapped Ether',
-      symbol: 'WETH',
-    },
-    tokenOut: {
-      name: 'Wrapped Matic',
-      symbol: 'WMATIC',
-    },
-  },
-  {
-    id: '0x00ed4625a5763118f20a9c21085dea14f5965f6a8682a524ac40ddb2fbce10ac-385',
-    from: '0xb50685c25485ca8c520f5286bbbf1d3f216d6989',
-    hash: '0x00ed4625a5763118f20a9c21085dea14f5965f6a8682a524ac40ddb2fbce10ac',
-    to: '0x4c60051384bd2d3c01bfc845cf5f4b44bcbe9de5',
-    timestamp: '1681119302',
-    amountIn: '60000000000000',
-    amountOut: '101592756625387405',
-    logIndex: 395,
-    blockNumber: 16811193,
-    tokenIn: {
-      name: 'Wrapped Ether',
-      symbol: 'WETH',
-    },
-    tokenOut: {
-      name: 'Wrapped Matic',
-      symbol: 'WMATIC',
-    },
-  },
-]
+import { Dispatch, FC, SetStateAction, useEffect } from 'react'
 
 const shorten = (text: any) => {
   return (
@@ -127,18 +11,38 @@ const shorten = (text: any) => {
   )
 }
 
-const Transactions = () => {
+const Transactions = ({}) => {
+  const { isLoading, isError, data: useQueryData, error }: any = useQueryHook()
+  console.log('useQueryData: ', useQueryData)
   return (
     <div>
       <h2 className="text-2xl py-2 border-b border-gray-600">
         Recent Transactions
       </h2>
       <div className="overflow-y-auto h-[400px]">
-        {txns.map((txnItem) => (
-          <TransactionItem key={txnItem.id} {...txnItem} />
-        ))}
+        {!isLoading &&
+          useQueryData.swaps.map((txnItem: any) => (
+            <TransactionItem key={txnItem.id} {...txnItem} />
+          ))}
       </div>
     </div>
+  )
+}
+
+const getTime = ({ timestamp }: any) => {
+  const d = new Date(timestamp)
+  console.log(d)
+  return d.toString()
+}
+
+const handleCopyKey = (key: any) => {
+  navigator.clipboard.writeText(key).then(
+    function () {
+      console.log('Copying to clipboard was successful!')
+    },
+    function (err) {
+      console.error('Async: Could not copy text: ', err)
+    }
   )
 }
 
@@ -155,29 +59,35 @@ const TransactionItem = ({
   blockNumber,
   to,
 }: any) => {
-
-  // useEffect(() => {
-  //   mempool()
-  // }, [])
-
-  const {
-    isLoading,
-    isError,
-    data: useQueryData,
-    error,
-  } = useQueryHook();
-  console.log("useQueryData: ", useQueryData);
-
   return (
-    <div className="w-full  bg-[#ffffff]/5 px-4 py-6 rounded-xl my-2 ">
+    <div className="w-[95%]  bg-[#ffffff]/5 px-4 py-6 rounded-xl my-2 relative">
+      <div className="absolute left-[2%] top-[50%]">
+        <Tooltip content="Copy to clipboard" rounded color="invert">
+          <p
+            className=" h-10 w-10 rounded-full z-10 bg-[#8a46ff]/30 text-3xl flex justify-center items-center cursor-pointer"
+            style={{ transform: 'translateY(-50%)' }}
+            onClick={() => handleCopyKey(hash)}
+          >
+            &#x2398;
+          </p>
+        </Tooltip>
+      </div>
+
       <div className="flex justify-between">
         <p className="text-xs bg-[#8a46ff]/30 px-2 py-1 rounded-sm">
-          {new Date(timestamp * 1000).toLocaleTimeString()}
+          {/* {getTime(timestamp)} */}
+          {timestamp}{' '}
         </p>
-
-        <a href="" className="text-xs bg-[#8a46ff]/30 px-2 py-1 rounded-sm">
-          &#128279;
-        </a>
+        <Tooltip content="View on PolygonScan" rounded color="invert">
+          <a
+            href={`https://polygonscan.com/tx/${hash}`}
+            target="blank"
+            rel="noreferrer"
+            className="text-xs bg-[#8a46ff]/30 px-2 py-1 rounded-sm"
+          >
+            &#128279;
+          </a>
+        </Tooltip>
       </div>
       <div className="flex w-[80%] md:w-[60%] mx-auto my-2 justify-between line py-2">
         <div className="text-center">
@@ -193,7 +103,7 @@ const TransactionItem = ({
           </div>
 
           <p className="text-sm py-1">{tokenIn.symbol}</p>
-          <p>{(amountIn / 10 ** 18).toFixed(4)}</p>
+          <p>{(amountIn / 10 ** tokenIn.decimals).toFixed(4)}</p>
         </div>
         <div className="text-center ">
           <div className="h-[30px] w-[30px] my-1  flex item-center justify-center relative bg-[#fff] rounded-full mx-auto ">
@@ -207,20 +117,30 @@ const TransactionItem = ({
             />
           </div>
           <p className="text-sm">{tokenOut.symbol}</p>
-          <p>{(amountOut / 10 ** 18).toFixed(4)}</p>
+          <p>{(amountOut / 10 ** tokenOut.decimals).toFixed(4)}</p>
         </div>
       </div>
       <div className="flex justify-center md:justify-between text-xs flex-wrap gap-2">
-        <p className="px-2 py-1 rounded-full bg-[#8a46ff]">
-          <span className="font-semibold">From:</span> {shorten(from)}
-        </p>
-        <p className="px-2 py-1 rounded-full bg-[#8a46ff]">To: {shorten(to)}</p>
-        <p className="px-2 py-1 rounded-full bg-[#8a46ff]">
-          <span className="font-semibold">TxHash:</span> {shorten(hash)}
-        </p>
+        <Tooltip content={from} rounded color="invert">
+          <p className="px-2 py-1 rounded-full bg-[#8a46ff]">
+            <span className="font-semibold">From:</span> {shorten(from)}
+          </p>
+        </Tooltip>
+        <Tooltip content={to} rounded color="invert">
+          <p className="px-2 py-1 rounded-full bg-[#8a46ff]">
+            To: {shorten(to)}
+          </p>
+        </Tooltip>
+        <Tooltip content={hash} rounded color="invert">
+          <p className="px-2 py-1 rounded-full bg-[#8a46ff]">
+            <span className="font-semibold">TxHash:</span> {shorten(hash)}
+          </p>
+        </Tooltip>
+
         <p className="px-2 py-1 rounded-full bg-[#8a46ff]">
           <span className="font-semibold">Block:</span> {blockNumber}
         </p>
+
         <p className="px-2 py-1 rounded-full bg-[#8a46ff]">
           <span className="font-semibold">Network:</span> Polygon
         </p>
