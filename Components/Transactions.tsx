@@ -20,7 +20,7 @@ const Transactions = ({}) => {
         Recent Transactions
       </h2>
       <div className="overflow-y-auto h-[400px]">
-        {!isLoading &&
+        {!isLoading && useQueryData && 
           useQueryData.swaps.map((txnItem: any) => (
             <TransactionItem key={txnItem.id} {...txnItem} />
           ))}
