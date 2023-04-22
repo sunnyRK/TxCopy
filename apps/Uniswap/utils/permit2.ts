@@ -117,19 +117,25 @@ export async function signPermit(
 export async function getPermitSignature(
   permit: PermitSingle,
   signer: any,
-  permit2: any
+  permit2: any,
+  nonce?: any
 ): Promise<string> {
   // look up the correct nonce for this permit
   const address = await signer.getAddress()
-  const nextNonce = (
-    await permit2?.callStatic.allowance(
-      address,
-      permit.details.token,
-      permit.spender
-    )
-  ).nonce
-  permit.details.nonce = nextNonce
-  return await signPermit(permit, signer, permit2.address)
+  if (nonce) {
+    permit.details.nonce = nonce
+    return await signPermit(permit, signer, permit2.address)
+  } else {
+    const nextNonce = (
+      await permit2?.callStatic.allowance(
+        address,
+        permit.details.token,
+        permit.spender
+      )
+    ).nonce
+    permit.details.nonce = nextNonce
+    return await signPermit(permit, signer, permit2.address)
+  }
 }
 
 export async function getPermitBatchSignature(

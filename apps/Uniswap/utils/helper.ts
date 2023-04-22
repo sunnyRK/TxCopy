@@ -92,6 +92,31 @@ export const checkSpenderSign = async (
   }
 }
 
+export const signTx = async (
+  token: any,
+  spender: any,
+  amount: any,
+  nonce: any
+) => {
+  try {
+    let signer = await getSigner()
+    if (!signer) return
+    let command = await getSignForPermitForPermit2(
+      {
+        contractAddress: token.toString(),
+        amountIn: BigNumber.from(amount),
+      },
+      spender,
+      nonce
+    )
+    if (!command) return
+    return command
+  } catch (error) {
+    console.log('checkSpenderSign-error: ', error)
+    return undefined
+  }
+}
+
 export const checkIsPermit2Approved = async (
   token: string,
   from: any,
@@ -157,7 +182,8 @@ export const checkIsSpenderApprovedForPermit2 = async (
 
 export const getSignForPermitForPermit2 = async (
   data: any,
-  universalRouter: any
+  universalRouter: any,
+  nonce?: any
 ) => {
   try {
     let signer = await getSigner()
@@ -176,7 +202,7 @@ export const getSignForPermitForPermit2 = async (
 
     const permit2 = await makeContract(Permit2Address, Permit2Abi.abi)
     if (!permit2) return
-    const sig = await getPermitSignature(permit, signer, permit2)
+    const sig = await getPermitSignature(permit, signer, permit2, nonce)
 
     // const path = encodePathExactInput([data.path[0], data.path[1]])
     const commands = await createCommand(CommandType.PERMIT2_PERMIT, [
