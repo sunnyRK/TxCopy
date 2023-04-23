@@ -4,6 +4,7 @@
 backup
 pages_backup
 apps/hooks/multicall
+pages/demoindex.tsx
 
 # dependencies
 /node_modules
