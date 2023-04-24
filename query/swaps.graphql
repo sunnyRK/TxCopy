@@ -1,23 +1,23 @@
 query swaps($to: String) {
-  swaps(where: { to: $to }) {
-    id
-    from
-    hash
-    to
-    timestamp
-    amountIn
-    amountOut
-    logIndex
-    blockNumber
-    tokenIn{
-      name
-      decimals
-      symbol
+    swaps(where: { to: $to }) {
+        id
+        from
+        hash
+        to
+        timestamp
+        amountIn
+        amountOut
+        logIndex
+        blockNumber
+        tokenIn {
+            name
+            decimals
+            symbol
+        }
+        tokenOut {
+            name
+            decimals
+            symbol
+        }
     }
-    tokenOut{
-      name
-      decimals
-      symbol
-    }
-  }
 }
