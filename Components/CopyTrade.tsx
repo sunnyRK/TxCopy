@@ -6,6 +6,7 @@ import { UniversalRouter } from '@/apps/Uniswap/utils/constants';
 import { makeAaveTx } from '@/apps/AAVE/aaveRouter';
 import { toast } from 'react-toastify';
 import { Tooltip } from '@nextui-org/react';
+import { useNetworkMismatch } from '@thirdweb-dev/react';
 
 const DataItem = ({ label, value, short }: any) => {
     return (
@@ -25,6 +26,8 @@ interface Props {
 }
 
 const CopyTrade: FC<Props> = ({ setIsLoading, txhash, setTxhash }) => {
+    const isOnWrongNetwork = useNetworkMismatch(); // Detect if the user is on the wrong network
+
     const [confirmDisabled, setCofirmDisabled] = useState(false);
     const [confirmLoading, setConfirmLoading] = useState(false);
 
@@ -38,6 +41,10 @@ const CopyTrade: FC<Props> = ({ setIsLoading, txhash, setTxhash }) => {
 
     const handleInputForUniswap = async (_txhash: any, _isInput: boolean) => {
         try {
+            if (isOnWrongNetwork) {
+                alert('Please Connect to Polygon');
+                return;
+            }
             setIsLoading(true);
             if (_isInput) {
                 setChainId('');
@@ -51,7 +58,6 @@ const CopyTrade: FC<Props> = ({ setIsLoading, txhash, setTxhash }) => {
                 console.log('txhash is invalid');
                 setTxhash('');
                 setCofirmDisabled(false);
-
                 return;
             }
             if (!_isInput) setConfirmLoading(true);
@@ -111,6 +117,9 @@ const CopyTrade: FC<Props> = ({ setIsLoading, txhash, setTxhash }) => {
             console.log('handleInput-error', error);
             if (!_isInput) setConfirmLoading(false);
             else setCofirmDisabled(false);
+            if (error?.toString().includes('invalid hash')) {
+                alert('Sorry, Invalid TxHash.');
+            }
         } finally {
             setIsLoading(false);
         }

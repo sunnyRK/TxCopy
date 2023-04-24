@@ -27,7 +27,7 @@ const Header = () => {
                 <div>
                     {isOnWrongNetwork ? (
                         <button
-                            color="red"
+                            className="rounded-lg bg-[#FF0000] text-[#ffffff] p-3"
                             onClick={() => switchNetwork?.(137)}
                         >
                             Switch Network
