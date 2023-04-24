@@ -5,39 +5,39 @@
 @tailwind utilities;
 
 :root {
-  --toastify-toast-background: #0a090d;
-  --toastify-text-color-light: #fff;
-  --toastify-text-color-dark: #fff;
+    --toastify-toast-background: #0a090d;
+    --toastify-text-color-light: #fff;
+    --toastify-text-color-dark: #fff;
 }
 
 .Toastify__toast {
-  color: #fff;
-  background: #0a090d !important;
+    color: #fff;
+    background: #0a090d !important;
 }
 
 .Toastify__toast::after,
 .Toastify__toast::before {
-  color: #fff;
+    color: #fff;
 }
 
 body {
-  background-color: #0a090d;
-  color: #fff;
-  font-family: 'Saira', sans-serif;
+    background-color: #0a090d;
+    color: #fff;
+    font-family: 'Saira', sans-serif;
 }
 
 .line {
-  position: relative;
+    position: relative;
 }
 
 .line::before {
-  position: absolute;
-  content: '';
-  top: 50%;
-  height: 2px;
-  /* background-color: #8a46ff; */
-  border-bottom: 1px dashed #8a46ff;
-  width: 60%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+    position: absolute;
+    content: '';
+    top: 50%;
+    height: 2px;
+    /* background-color: #8a46ff; */
+    border-bottom: 1px dashed #8a46ff;
+    width: 60%;
+    left: 50%;
+    transform: translate(-50%, -50%);
 }
