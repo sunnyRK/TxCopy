@@ -4,6 +4,7 @@ import Loader from '@/Components/Loader';
 import { useState } from 'react';
 import Footer from '@/Components/Footer';
 import Transaction from '@/Components/Transactions';
+import {TransactionDetails} from '@/Components/TransactionDetails';
 
 export default function Home() {
     const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -19,16 +20,19 @@ export default function Home() {
                 </div>
 
                 <div className="flex-col md:flex-row flex gap-4 items-start">
-                    <div className="w-full md:w-[40%] bg-[#ffffff10] p-6 rounded-lg">
+                    <div className="w-full md:w-[60%] bg-[#ffffff10] p-6 rounded-lg">
                         <CopyTrade
                             setIsLoading={setIsLoading}
                             txhash={txhash}
                             setTxhash={setTxhash}
                         />
                     </div>
-                    <div className="w-full md:w-[60%] bg-[#ffffff10] p-6 rounded-lg">
-                        <Transaction />
+                    <div className="w-full md:w-[40%] bg-[#ffffff10] p-6 rounded-lg">
+                        <TransactionDetails />
                     </div>
+                </div>
+                <div className="w-full md:w-[100%] bg-[#ffffff10] p-6 rounded-lg my-10">
+                    <Transaction />
                 </div>
             </div>
 

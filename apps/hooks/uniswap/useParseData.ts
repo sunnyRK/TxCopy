@@ -5,6 +5,7 @@ import {
     CommandType,
     MSG_SENDER,
     Permit2Address,
+    UniversalRouter,
     swapCodes
 } from '../../Uniswap/utils/constants';
 import { getProvider, getSigner } from '../../common/helper';
@@ -19,6 +20,7 @@ import { usePriceHook } from '../commonHooks/usePriceHook';
 import { ThirdwebSDK } from '@thirdweb-dev/react';
 import ERC20_ABI from '../../common/abis/erc20_2.json';
 import { useErc20Data } from '../commonHooks/useErc20Hooks';
+import { useAppStore } from '@/utils/appStore'
 
 type Props = {
     receipt: any;
@@ -28,6 +30,23 @@ type Props = {
 export function useParseData() {
     const { mutateAsync: generateRoute } = usePriceHook();
     const { mutateAsync: getErc20Data } = useErc20Data();
+    const { 
+        setProtocolName,
+        setContractAddress,
+        setActionName,
+        setTokenIn,
+        setTokenOut,
+        setDecimalIn,
+        setDecimalOut,
+        setBalanceIn,
+        setAmountIn,
+        setAmountOut,
+        setAllowanceIn,
+        setPermit2Allowance,
+        setPermit2Expiry,
+        setpermit2Nonce,
+     }: any = useAppStore((state) => state)
+
 
     async function checkSpenderAllowance({
         receipt,
@@ -147,6 +166,24 @@ export function useParseData() {
 
             const amountOutprice: any = route?.quote.toExact().toString();
             console.log('amountOutprice', amountOutprice.toString());
+            let tempAmountOutprice = ethers.utils.parseUnits(
+                amountOutprice,
+                tokenOutDecimals
+            );
+            setProtocolName('Uniswap Universal Router')
+            setContractAddress(UniversalRouter)
+            setActionName('Univ3-Swap')
+            setTokenIn(erc20tokenIndata?.symbol)
+            setTokenOut(erc20tokenOutdata?.symbol)
+            setDecimalIn(erc20tokenIndata?.decimals)
+            setDecimalOut(erc20tokenOutdata?.decimals)
+            setBalanceIn(erc20tokenIndata?.balance)
+            setAmountIn(amountIn)
+            setAmountOut(tempAmountOutprice)
+            setAllowanceIn(erc20tokenIndata?.allowance)
+            // setPermit2Allowance()
+            // setPermit2Expiry()
+            // setpermit2Nonce()
 
             let isEnoughBalance: boolean = true;
             if (
