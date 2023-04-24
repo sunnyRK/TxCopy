@@ -126,7 +126,7 @@ export function useParseData() {
                 spender: Permit2Address
             });
             const erc20tokenOutdata = await getErc20Data({
-                token: tokenIn,
+                token: tokenOut,
                 address: address,
                 spender: Permit2Address
             });
