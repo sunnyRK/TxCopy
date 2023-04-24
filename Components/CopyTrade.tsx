@@ -191,11 +191,8 @@ const CopyTrade: FC<Props> = ({ setIsLoading, txhash, setTxhash }) => {
                                     <>
                                         <pre key={index}>
                                             {/* @ts-ignore */}
-                                            {
-                                                data?.functionFragment?.inputs[
-                                                    index
-                                                ].name
-                                            }{' '}
+                                            {data?.functionFragment?.inputs[index].name}
+                                            {' '}
                                             {key.toString()}
                                         </pre>
                                     </>
