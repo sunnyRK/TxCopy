@@ -34,13 +34,17 @@ export const TransactionDetails = ({}) => {
 
     return (
         <div>
+            <h2 className="text-2xl py-2 border-b border-gray-600">
+                Transaction Details
+            </h2>
+            <h2 className="bg-[#8a46ff]/20  p-4  rounded-lg my-2">
+                Copy and paste tx to see its details
+            </h2>
             {!protcolName ? (
                 <></>
             ) : (
                 <>
-                    <h2 className="text-2xl py-2 border-b border-gray-600">
-                        Transaction Details
-                    </h2>
+
                     <div className="overflow-y-auto h-[400px]">
                         <div className="w-[95%]  bg-[#ffffff]/5 px-4 py-6 rounded-xl my-2 relative">
                             {/* <div className="absolute left-[2%] top-[50%]">
