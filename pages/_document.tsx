@@ -6,7 +6,7 @@ export default function Document() {
         <Html lang="en">
             <script src="https://cdn.tailwindcss.com"></script>
             <title>DefiLens</title>
-            <link rel = "icon" href ="/logo.png" type="image/x-icon"></link>
+            <link rel="icon" href="/logo.png" type="image/x-icon"></link>
             <Head />
             <body>
                 <Main />

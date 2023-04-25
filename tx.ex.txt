@@ -81,3 +81,6 @@ extra big trade
 
 Compound
 0x52819a3aca9fd842d63adcfb5cc628dc097e01e11a9e9d99370a81ea3627bdb0
+
+aave-withdraw lending
+0xcb8639205716d33125a1a5afc762662bfe82703cb45fb383942d5da8c829baea

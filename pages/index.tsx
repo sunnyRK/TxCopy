@@ -4,7 +4,7 @@ import Loader from '@/Components/Loader';
 import { useState } from 'react';
 import Footer from '@/Components/Footer';
 import Transaction from '@/Components/Transactions';
-import {TransactionDetails} from '@/Components/TransactionDetails';
+import { TransactionDetails } from '@/Components/TransactionDetails';
 
 export default function Home() {
     const [isLoading, setIsLoading] = useState<boolean>(false);

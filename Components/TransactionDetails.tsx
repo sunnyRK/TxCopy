@@ -44,7 +44,6 @@ export const TransactionDetails = ({}) => {
                 <></>
             ) : (
                 <>
-
                     <div className="overflow-y-auto h-[400px]">
                         <div className="w-[95%]  bg-[#ffffff]/5 px-4 py-6 rounded-xl my-2 relative">
                             {/* <div className="absolute left-[2%] top-[50%]">
@@ -125,9 +124,7 @@ export const TransactionDetails = ({}) => {
                                     </p>
                                 </div>
                             </div>
-                            <div className="flex justify-center md:justify-between text-xs flex-wrap gap-2">
-                              
-                            </div>
+                            <div className="flex justify-center md:justify-between text-xs flex-wrap gap-2"></div>
                         </div>
                     </div>
                 </>

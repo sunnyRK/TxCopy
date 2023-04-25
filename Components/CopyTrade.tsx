@@ -1,12 +1,13 @@
 import { useUniversalRouter } from '@/apps/hooks/useUniversalRouter';
 import { Dispatch, FC, SetStateAction, useState } from 'react';
-import { contractAddresses } from '@/utils/default';
+import { contractAddresses, protocolName } from '@/utils/default';
 import { getProvider } from '@/apps/common/helper';
 import { UniversalRouter } from '@/apps/Uniswap/utils/constants';
-import { makeAaveTx } from '@/apps/AAVE/aaveRouter';
+import { useLendingRoutes } from '@/apps/Lending/useLendingRoutes';
 import { toast } from 'react-toastify';
 import { Tooltip } from '@nextui-org/react';
 import { useNetworkMismatch } from '@thirdweb-dev/react';
+import { useAppStore } from '@/utils/appStore';
 
 const DataItem = ({ label, value, short }: any) => {
     return (
@@ -28,6 +29,23 @@ interface Props {
 const CopyTrade: FC<Props> = ({ setIsLoading, txhash, setTxhash }) => {
     const isOnWrongNetwork = useNetworkMismatch(); // Detect if the user is on the wrong network
 
+    const {
+        setProtocolName,
+        setContract,
+        setActionName,
+        setTokenIn,
+        setTokenOut,
+        setDecimalIn,
+        setDecimalOut,
+        setBalanceIn,
+        setAmountIn,
+        setAmountOut,
+        setAllowanceIn,
+        setPermit2Allowance,
+        setPermit2Expiry,
+        setpermit2Nonce
+    }: any = useAppStore((state) => state);
+
     const [confirmDisabled, setCofirmDisabled] = useState(false);
     const [confirmLoading, setConfirmLoading] = useState(false);
 
@@ -38,6 +56,34 @@ const CopyTrade: FC<Props> = ({ setIsLoading, txhash, setTxhash }) => {
     const [signature, setFunctionSignature] = useState<any>();
     const [tx, setCopyTrade] = useState();
     const { mutateAsync: makeTx } = useUniversalRouter();
+    const { mutateAsync: makeLendingTx } = useLendingRoutes();
+
+    const resetData = async () => {
+        try {
+            setChainId('');
+            setContractAddress(undefined);
+            setFunctionName(undefined);
+            setFunctionSignature(undefined);
+            setData(undefined);
+
+            setProtocolName();
+            setContract();
+            setActionName();
+            setTokenIn();
+            setTokenOut();
+            setDecimalIn();
+            setDecimalOut();
+            setBalanceIn();
+            setAmountIn();
+            setAmountOut();
+            setAllowanceIn();
+            setPermit2Allowance();
+            setPermit2Expiry();
+            setpermit2Nonce();
+        } catch (error) {
+            console.log('resetData-error', error);
+        }
+    };
 
     const handleInputForUniswap = async (_txhash: any, _isInput: boolean) => {
         try {
@@ -47,11 +93,7 @@ const CopyTrade: FC<Props> = ({ setIsLoading, txhash, setTxhash }) => {
             }
             setIsLoading(true);
             if (_isInput) {
-                setChainId('');
-                setContractAddress(undefined);
-                setFunctionName(undefined);
-                setFunctionSignature(undefined);
-                setData(undefined);
+                await resetData();
             }
 
             if (!_txhash) {
@@ -72,14 +114,20 @@ const CopyTrade: FC<Props> = ({ setIsLoading, txhash, setTxhash }) => {
 
             let txdata: any;
             if (receipt.to === UniversalRouter) {
-                console.log('UniTrade');
+                console.log('UniSwap Trade');
                 txdata = await makeTx({
                     txHash: _txhash,
                     onlyCheck: _isInput ? true : false
                 });
             } else if ((await contractAddresses).includes(receipt.to)) {
-                console.log('OtherTrade');
-                txdata = await makeAaveTx(_txhash, _isInput ? true : false);
+                console.log('Lending Trade');
+
+                const protcolName: any = protocolName[receipt.to];
+                txdata = await makeLendingTx({
+                    txHash: _txhash,
+                    onlyCheck: _isInput ? true : false,
+                    protcolName
+                });
             } else {
                 toast.error('This Trade is not supported');
                 if (!_isInput) setConfirmLoading(false);
@@ -200,8 +248,10 @@ const CopyTrade: FC<Props> = ({ setIsLoading, txhash, setTxhash }) => {
                                     <>
                                         <pre key={index}>
                                             {/* @ts-ignore */}
-                                            {data?.functionFragment?.inputs[index].name}
-                                            {' '}
+                                            { data?.functionFragment?.inputs[
+                                                    index
+                                                ].name
+                                            }{' '}
                                             {key.toString()}
                                         </pre>
                                     </>

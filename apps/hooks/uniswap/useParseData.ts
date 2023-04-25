@@ -20,7 +20,7 @@ import { usePriceHook } from '../commonHooks/usePriceHook';
 import { ThirdwebSDK } from '@thirdweb-dev/react';
 import ERC20_ABI from '../../common/abis/erc20_2.json';
 import { useErc20Data } from '../commonHooks/useErc20Hooks';
-import { useAppStore } from '@/utils/appStore'
+import { useAppStore } from '@/utils/appStore';
 
 type Props = {
     receipt: any;
@@ -30,9 +30,9 @@ type Props = {
 export function useParseData() {
     const { mutateAsync: generateRoute } = usePriceHook();
     const { mutateAsync: getErc20Data } = useErc20Data();
-    const { 
+    const {
         setProtocolName,
-        setContractAddress,
+        setContract,
         setActionName,
         setTokenIn,
         setTokenOut,
@@ -44,9 +44,8 @@ export function useParseData() {
         setAllowanceIn,
         setPermit2Allowance,
         setPermit2Expiry,
-        setpermit2Nonce,
-     }: any = useAppStore((state) => state)
-
+        setpermit2Nonce
+    }: any = useAppStore((state) => state);
 
     async function checkSpenderAllowance({
         receipt,
@@ -170,17 +169,17 @@ export function useParseData() {
                 amountOutprice,
                 tokenOutDecimals
             );
-            setProtocolName('Uniswap Universal Router')
-            setContractAddress(UniversalRouter)
-            setActionName('Univ3-Swap')
-            setTokenIn(erc20tokenIndata?.symbol)
-            setTokenOut(erc20tokenOutdata?.symbol)
-            setDecimalIn(erc20tokenIndata?.decimals)
-            setDecimalOut(erc20tokenOutdata?.decimals)
-            setBalanceIn(erc20tokenIndata?.balance)
-            setAmountIn(amountIn)
-            setAmountOut(tempAmountOutprice)
-            setAllowanceIn(erc20tokenIndata?.allowance)
+            setProtocolName('Uniswap Universal Router');
+            setContract(UniversalRouter);
+            setActionName('Univ3-Swap');
+            setTokenIn(erc20tokenIndata?.symbol);
+            setTokenOut(erc20tokenOutdata?.symbol);
+            setDecimalIn(erc20tokenIndata?.decimals);
+            setDecimalOut(erc20tokenOutdata?.decimals);
+            setBalanceIn(erc20tokenIndata?.balance);
+            setAmountIn(amountIn);
+            setAmountOut(tempAmountOutprice);
+            setAllowanceIn(erc20tokenIndata?.allowance);
             // setPermit2Allowance()
             // setPermit2Expiry()
             // setpermit2Nonce()
