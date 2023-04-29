@@ -15,7 +15,7 @@ export default function Home() {
             <div className="container mx-auto my-10 mt-28">
                 <div className="text-center">
                     <h1 className="text-4xl text-[#fff] py-3 pb-6 font-semibold uppercase">
-                        CopyTrade For Univ3 Universal Router
+                        CopyTrade For On-Chain Data
                     </h1>
                 </div>
 
