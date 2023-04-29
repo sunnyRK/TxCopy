@@ -1,10 +1,10 @@
-import Header from '@/Components/Header';
-import CopyTrade from '@/Components/CopyTrade';
-import Loader from '@/Components/Loader';
+import Header from '@/components/Header';
+import CopyTrade from '@/components/CopyTrade';
+import Loader from '@/components/Loader';
 import { useState } from 'react';
-import Footer from '@/Components/Footer';
-import Transaction from '@/Components/Transactions';
-import { TransactionDetails } from '@/Components/TransactionDetails';
+import Footer from '@/components/Footer';
+import Transaction from '@/components/Transactions';
+import { TransactionDetails } from '@/components/TransactionDetails';
 
 export default function Home() {
     const [isLoading, setIsLoading] = useState<boolean>(false);
